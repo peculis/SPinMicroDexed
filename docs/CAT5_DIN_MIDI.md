@@ -2,6 +2,22 @@
 
 Date: 10 August 2026
 
+## Status
+
+**PASS on target hardware.** Raw Serial1 reception and PJRC MIDI parsing were
+both confirmed on Teensy pin 0 with the KeyLab 25 and the existing SPinSynth DIN
+input circuit. Note On/Off channel, note and velocity values decoded correctly.
+
+A C-major chord produced held counts 1, 2 and 3; its releases returned through
+2 and 1 to 0. The final counters were 14 Note On, 14 Note Off, zero held and
+zero unmatched Note Off. Channel-aftertouch status/data (`0xD0`) was also
+observed. Five-second health reports continued without a restart; idle Audio CPU
+was approximately 1.0%, with a diagnostic-printing peak of 4.3%, and Audio
+Memory remained 5/5 blocks.
+
+The raw-byte and per-event Serial output is temporary CAT instrumentation and
+must be disabled before latency/performance acceptance.
+
 ## Objective
 
 Validate the PJRC Arduino MIDI Library receive path from the opto-isolated DIN

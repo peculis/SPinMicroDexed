@@ -111,7 +111,8 @@
 //#define SPIN_CAT5_DIN_MIDI_TEST 1 // CAT 5 passed
 //#define SPIN_CAT5_RAW_UART_PROBE 1 // CAT 5 only; raw logging disabled
 //#define SPIN_CAT6_USB_MIDI_TEST 1 // CAT 6 passed
-#define SPIN_CAT7_USB_AUDIO_TEST 1 // Simultaneous USB Audio + Audio Shield
+//#define SPIN_CAT7_USB_AUDIO_TEST 1 // CAT 7 passed
+#define SPIN_CAT8_STATIC_MIDI_INDICATOR 1 // Remove runtime CGRAM animation
 //#define SPIN_CONTROL_DIAGNOSTICS 1 // CAT 2/4 only; suppress encoder log traffic
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000

@@ -3777,9 +3777,12 @@ void UI_func_voice_select(uint8_t param)
     lcd.setCursor(15, 0);
     lcd.write(1);
 
-#ifdef TEENSY3_6
-    lcd.createChar(6, (uint8_t*)special_chars[16]); // MIDI activity note symbol
-    lcd.createChar(7, (uint8_t*)special_chars[16]); // MIDI activity note symbol
+    // Load the note symbol once when entering the voice screen. Runtime MIDI
+    // activity only writes this cached character or a blank; it never rewrites
+    // LCD CGRAM while notes are being handled.
+    lcd.createChar(6, (uint8_t*)special_chars[16]);
+#if NUM_DEXED > 1
+    lcd.createChar(7, (uint8_t*)special_chars[16]);
 #endif
   }
 

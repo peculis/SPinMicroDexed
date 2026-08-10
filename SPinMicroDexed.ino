@@ -242,6 +242,10 @@ uint8_t spin_lcd_i2c_status = 255;
 uint8_t spin_sgtl_i2c_status = 255;
 bool spin_sgtl_enabled = false;
 #endif
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+elapsedMicros spin_cat8_midi_poll_timer;
+uint32_t spin_cat8_midi_poll_max_us = 0;
+#endif
 uint8_t active_voices[NUM_DEXED];
 uint8_t midi_voices[NUM_DEXED];
 #ifdef SHOW_CPU_LOAD_MSEC
@@ -262,15 +266,6 @@ char g_voice_name[NUM_DEXED][VOICE_NAME_LEN];
 char g_bank_name[NUM_DEXED][BANK_NAME_LEN];
 char receive_bank_filename[FILENAME_LEN];
 uint8_t selected_instance_id = 0;
-#ifdef TEENSY4
-#if NUM_DEXED>1
-int8_t midi_decay[NUM_DEXED] = { -1, -1};
-#else
-int8_t midi_decay[NUM_DEXED] = { -1};
-#endif
-elapsedMillis midi_decay_timer;
-#endif
-
 #if defined(USE_FX)
 // Allocate the delay lines for chorus
 int16_t delayline[NUM_DEXED][MOD_DELAY_SAMPLE_BUFFER];
@@ -337,6 +332,11 @@ static void spin_report_diagnostics()
     Serial.print(master_peak_l.read(), 3);
   else
     Serial.print(F("n/a"));
+#endif
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+  Serial.print(F(" MidiPollMaxUs="));
+  Serial.print(spin_cat8_midi_poll_max_us);
+  spin_cat8_midi_poll_max_us = 0;
 #endif
 #if defined(SPIN_CAT5_DIN_MIDI_TEST) && defined(MIDI_DEVICE_DIN)
   Serial.print(F(" DIN(on/off/held/unmatched)="));
@@ -589,6 +589,9 @@ void setup()
 #ifdef SPIN_CAT7_USB_AUDIO_TEST
   Serial.println(F("[CAT7-AUDIO] Stereo signal feeds Audio Shield I2S and USB Audio simultaneously."));
 #endif
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+  Serial.println(F("[CAT8-UI] Static MIDI activity symbol active; runtime LCD character animation disabled."));
+#endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;
 #endif
@@ -673,11 +676,23 @@ void setup()
   Serial.println(F("<setup end>"));
 #endif
 
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+  spin_cat8_midi_poll_timer = 0;
+  spin_cat8_midi_poll_max_us = 0;
+#endif
+
   LCDML.OTHER_jumpToFunc(UI_func_voice_select);
 }
 
 void loop()
 {
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+  const uint32_t spin_cat8_midi_poll_gap_us = spin_cat8_midi_poll_timer;
+  spin_cat8_midi_poll_timer = 0;
+  if (spin_cat8_midi_poll_gap_us > spin_cat8_midi_poll_max_us)
+    spin_cat8_midi_poll_max_us = spin_cat8_midi_poll_gap_us;
+#endif
+
 #ifdef SPIN_CAT3_AUDIO_TEST
   // 1 s tone, 250 ms silence, then the other channel; no blocking delays.
   const uint32_t spin_cat3_state_duration =
@@ -742,44 +757,24 @@ void loop()
 
     if (LCDML.FUNC_getID() == LCDML.OTHER_getIDFromFunction(UI_func_voice_select))
     {
+      static bool midi_playing[NUM_DEXED] = {false};
       for (uint8_t instance_id = 0; instance_id < NUM_DEXED; instance_id++)
       {
-#ifdef TEENSY4
-        if (midi_decay_timer > MIDI_DECAY_TIMER && midi_decay[instance_id] > 0)
-        {
-          midi_decay[instance_id]--;
-          lcd.createChar(6 + instance_id, (uint8_t*)special_chars[15 - (7 - midi_decay[instance_id])]);
-          lcd.setCursor(14 + instance_id, 1);
-          lcd.write(6 + instance_id);
-        }
-        else if (midi_voices[instance_id] == 0 && midi_decay[instance_id] == 0 && !MicroDexed[instance_id]->getSustain())
-        {
-          midi_decay[instance_id]--;
-          lcd.setCursor(14 + instance_id, 1);
-          lcd.write(20); // blank
-        }
-#else
-        static bool midi_playing[NUM_DEXED];
-        if (midi_voices[instance_id] > 0 && midi_playing[instance_id] == false)
+        const bool should_show_midi =
+          midi_voices[instance_id] > 0 || MicroDexed[instance_id]->getSustain();
+        if (should_show_midi && !midi_playing[instance_id])
         {
           midi_playing[instance_id] = true;
           lcd.setCursor(14 + instance_id, 1);
           lcd.write(6 + instance_id);
         }
-        else if (midi_voices[instance_id] == 0 && !MicroDexed[instance_id]->getSustain())
+        else if (!should_show_midi && midi_playing[instance_id])
         {
           midi_playing[instance_id] = false;
           lcd.setCursor(14 + instance_id, 1);
           lcd.write(20); // blank
         }
-#endif
       }
-#ifdef TEENSY4
-      if (midi_decay_timer > 250)
-      {
-        midi_decay_timer = 0;
-      }
-#endif
     }
   }
   else
@@ -821,13 +816,6 @@ void handleNoteOn(byte inChannel, byte inNumber, byte inVelocity)
           MicroDexed[instance_id]->keydown(inNumber, uint8_t(float(configuration.dexed[instance_id].velocity_level / 127.0)*inVelocity + 0.5));
 
         midi_voices[instance_id]++;
-#ifdef TEENSY4
-        if (LCDML.FUNC_getID() == LCDML.OTHER_getIDFromFunction(UI_func_voice_select))
-        {
-          midi_decay_timer = 0;
-          midi_decay[instance_id] = min(inVelocity / 5, 7);
-        }
-#endif
 #ifdef DEBUG
         char note_name[4];
         getNoteName(note_name, inNumber);

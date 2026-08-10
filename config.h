@@ -106,7 +106,8 @@
 //#define DEBUG 1
 #define SERIAL_SPEED 230400
 #define SPIN_DIAGNOSTICS 1 // CAT 2: nonblocking hardware/health telemetry
-#define SPIN_CAT3_AUDIO_TEST 1 // Alternating stereo test tones; remove after CAT 3
+//#define SPIN_CAT3_AUDIO_TEST 1 // CAT 3 passed; diagnostic tones disabled
+#define SPIN_CAT4_UI_TEST 1 // Existing LCDMenuLib2 interface acceptance
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000
 

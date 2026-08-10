@@ -541,6 +541,9 @@ void setup()
 
 #ifdef SPIN_DIAGNOSTICS
   Serial.println(F("[CAT2] SPinMicroDexed diagnostics active; report interval 5 seconds."));
+#ifdef SPIN_CAT4_UI_TEST
+  Serial.println(F("[CAT4-UI] Existing MicroDexed LCD/menu test active; CAT3 tones disabled."));
+#endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;
 #endif

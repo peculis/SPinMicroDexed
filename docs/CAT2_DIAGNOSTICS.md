@@ -15,24 +15,26 @@ changing the synthesizer, MIDI, menu, storage or audio architecture.
 - Retain and report the return value from `AudioControlSGTL5000::enable()`.
 - Report microSD presence, uptime, processor temperature, current/maximum Audio
   CPU use and current/maximum Audio Memory use every five seconds.
-- Toggle the built-in LED every 500 ms as a nonblocking heartbeat.
+- Log detected rotations and button edges for both encoders as they occur.
 
-The diagnostics contain no `delay()` calls and do not write to the LCD. CAT 2
-therefore preserves CAT 1 behavior, including the expected `*ERROR*` display
-when no microSD card is installed.
+The diagnostics contain no `delay()` calls and do not write to the LCD. They
+also deliberately leave the built-in LED untouched: its pin 13 is the Audio
+Shield microSD SCK signal. CAT 2 therefore preserves CAT 1 behavior, including
+the expected `*ERROR*` display when no microSD card is installed.
 
 ## Hardware test
 
 1. Compile and upload using Teensy 4.0, 600 MHz, Serial + MIDI + Audio, Faster.
 2. Open Arduino IDE Serial Monitor. The configured speed is 230400 baud (USB
    Serial is baud-rate independent, but selecting 230400 documents the setup).
-3. Confirm the built-in orange LED changes state twice per second.
-4. Wait at least 15 seconds and retain three consecutive `[CAT2]` lines.
-5. Confirm `LCD@0x27=OK`, `SGTL@0x0A=OK`, `codec=OK`, and `SD=none`.
-6. Confirm uptime rises by five seconds per report, temperature is plausible,
+3. Wait at least 15 seconds and retain three consecutive `[CAT2]` lines.
+4. Confirm `LCD@0x27=OK`, `SGTL@0x0A=OK`, `codec=OK`, and `SD=none`.
+5. Confirm uptime rises by five seconds per report, temperature is plausible,
    and CPU/memory values do not continuously climb while idle.
-7. Operate both encoders for 30 seconds and confirm reports and heartbeat
-   continue without a restart.
+6. Rotate and press each encoder. Confirm matching `[CAT2-CONTROL] LEFT ...`
+   and `[CAT2-CONTROL] RIGHT ...` messages appear for every physical action.
+7. Operate both encoders for 30 seconds and confirm reports continue without a
+   restart.
 
 Expected line format:
 
@@ -41,7 +43,8 @@ Expected line format:
 ```
 
 CAT 2 passes when the status fields match the installed hardware, three reports
-arrive at five-second intervals, and no reboot or retained crash is observed.
+arrive at five-second intervals, every control produces the corresponding event
+message, and no reboot or retained crash is observed.
 
 ## Build verification
 

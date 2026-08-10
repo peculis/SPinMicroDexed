@@ -525,6 +525,10 @@ void lcdml_menu_control(void)
   // RIGHT
   if (g_LCDML_CONTROL_Encoder_position[ENC_R] <= -3)
   {
+#ifdef SPIN_DIAGNOSTICS
+    Serial.print(F("[CAT2-CONTROL] RIGHT rotate - button="));
+    Serial.println(button[ENC_R] ? F("released") : F("pressed"));
+#endif
     if (!button[ENC_R])
     {
       LCDML.BT_left();
@@ -547,6 +551,10 @@ void lcdml_menu_control(void)
   }
   else if (g_LCDML_CONTROL_Encoder_position[ENC_R] >= 3)
   {
+#ifdef SPIN_DIAGNOSTICS
+    Serial.print(F("[CAT2-CONTROL] RIGHT rotate + button="));
+    Serial.println(button[ENC_R] ? F("released") : F("pressed"));
+#endif
     if (!button[ENC_R])
     {
 #ifdef DEBUG
@@ -571,12 +579,18 @@ void lcdml_menu_control(void)
   {
     if (!button[ENC_R] && g_LCDML_CONTROL_button_prev[ENC_R]) //falling edge, button pressed
     {
+#ifdef SPIN_DIAGNOSTICS
+      Serial.println(F("[CAT2-CONTROL] RIGHT button pressed"));
+#endif
       encoderDir[ENC_R].ButtonPressed(true);
       g_LCDML_CONTROL_button_prev[ENC_R] = LOW;
       g_LCDML_CONTROL_button_press_time[ENC_R] = millis();
     }
     else if (button[ENC_R] && !g_LCDML_CONTROL_button_prev[ENC_R]) //rising edge, button not active
     {
+#ifdef SPIN_DIAGNOSTICS
+      Serial.println(F("[CAT2-CONTROL] RIGHT button released"));
+#endif
       encoderDir[ENC_R].ButtonPressed(false);
       g_LCDML_CONTROL_button_prev[ENC_R] = HIGH;
 
@@ -635,6 +649,10 @@ void lcdml_menu_control(void)
   // LEFT
   if (g_LCDML_CONTROL_Encoder_position[ENC_L] <= -3)
   {
+#ifdef SPIN_DIAGNOSTICS
+    Serial.print(F("[CAT2-CONTROL] LEFT rotate - button="));
+    Serial.println(button[ENC_L] ? F("released") : F("pressed"));
+#endif
     if (!button[ENC_L])
     {
 #ifdef DEBUG
@@ -661,6 +679,10 @@ void lcdml_menu_control(void)
   }
   else if (g_LCDML_CONTROL_Encoder_position[ENC_L] >= 3)
   {
+#ifdef SPIN_DIAGNOSTICS
+    Serial.print(F("[CAT2-CONTROL] LEFT rotate + button="));
+    Serial.println(button[ENC_L] ? F("released") : F("pressed"));
+#endif
     if (!button[ENC_L])
     {
 #ifdef DEBUG
@@ -689,12 +711,18 @@ void lcdml_menu_control(void)
   {
     if (!button[ENC_L] && g_LCDML_CONTROL_button_prev[ENC_L]) //falling edge, button pressed
     {
+#ifdef SPIN_DIAGNOSTICS
+      Serial.println(F("[CAT2-CONTROL] LEFT button pressed"));
+#endif
       encoderDir[ENC_L].ButtonPressed(true);
       g_LCDML_CONTROL_button_prev[ENC_L] = LOW;
       g_LCDML_CONTROL_button_press_time[ENC_L] = millis();
     }
     else if (button[ENC_L] && !g_LCDML_CONTROL_button_prev[ENC_L]) //rising edge, button not active
     {
+#ifdef SPIN_DIAGNOSTICS
+      Serial.println(F("[CAT2-CONTROL] LEFT button released"));
+#endif
       encoderDir[ENC_L].ButtonPressed(false);
       g_LCDML_CONTROL_button_prev[ENC_L] = HIGH;
 

@@ -230,11 +230,9 @@ elapsedMillis long_button_pressed;
 elapsedMillis control_rate;
 #ifdef SPIN_DIAGNOSTICS
 elapsedMillis spin_diagnostic_timer;
-elapsedMillis spin_heartbeat_timer;
 uint8_t spin_lcd_i2c_status = 255;
 uint8_t spin_sgtl_i2c_status = 255;
 bool spin_sgtl_enabled = false;
-bool spin_heartbeat_state = false;
 #endif
 uint8_t active_voices[NUM_DEXED];
 uint8_t midi_voices[NUM_DEXED];
@@ -330,8 +328,6 @@ void setup()
 {
 #ifdef SPIN_DIAGNOSTICS
   Serial.begin(SERIAL_SPEED);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
   if (CrashReport)
   {
     Serial.println(F("[CAT2] Previous crash report:"));
@@ -539,7 +535,6 @@ void setup()
   Serial.println(F("[CAT2] SPinMicroDexed diagnostics active; report interval 5 seconds."));
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;
-  spin_heartbeat_timer = 0;
 #endif
 
 #ifdef DEBUG
@@ -614,12 +609,6 @@ void setup()
 void loop()
 {
 #ifdef SPIN_DIAGNOSTICS
-  if (spin_heartbeat_timer >= 500)
-  {
-    spin_heartbeat_timer -= 500;
-    spin_heartbeat_state = !spin_heartbeat_state;
-    digitalWrite(LED_BUILTIN, spin_heartbeat_state ? HIGH : LOW);
-  }
   if (spin_diagnostic_timer >= 5000)
   {
     spin_diagnostic_timer -= 5000;

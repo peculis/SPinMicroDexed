@@ -27,3 +27,16 @@ Play sustained and repeated notes while entering menu functions that display a
 confirmation or error message. Verify that notes continue to start and stop,
 there are no stuck notes, and `MidiPollMaxUs` remains bounded during the
 one-second message display.
+
+## Hardware acceptance
+
+CAT 9 passed on 10 August 2026. USB MIDI and DIN MIDI were both played while
+operating the encoder-driven HMI, and the result was satisfactory after the
+initial startup period. Timed LCD messages no longer make the instrument
+unplayable because MIDI polling continues during the message interval.
+
+A short period of sluggish response was perceived soon after startup, followed
+by stable operation. Earlier CAT 8 telemetry also captured isolated startup
+poll-gap outliers before MIDI activity began. This is retained as a known issue
+for a dedicated startup-timeline test; it is not attributed to the CAT 9
+cooperative waits or treated as a steady-state failure.

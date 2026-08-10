@@ -417,6 +417,29 @@ bool menu_init = true;
 bool spin_voice_screen_dirty = true;
 #endif
 
+#ifdef SPIN_CAT9_COOPERATIVE_UI_WAIT
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+extern elapsedMicros spin_cat8_midi_poll_timer;
+extern uint32_t spin_cat8_midi_poll_max_us;
+#endif
+
+static void spin_cooperative_message_wait(const uint32_t duration_ms)
+{
+  elapsedMillis message_timer = 0;
+  while (message_timer < duration_ms)
+  {
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+    const uint32_t poll_gap_us = spin_cat8_midi_poll_timer;
+    spin_cat8_midi_poll_timer = 0;
+    if (poll_gap_us > spin_cat8_midi_poll_max_us)
+      spin_cat8_midi_poll_max_us = poll_gap_us;
+#endif
+    check_midi_devices();
+    yield();
+  }
+}
+#endif
+
 #ifdef U8X8_DISPLAY
 const uint8_t * flipped_scroll_bar[5];
 const uint8_t * flipped_block_bar[7];
@@ -3722,14 +3745,14 @@ void UI_func_eeprom_reset(uint8_t param)
 
           lcd.setCursor(0, 1);
           lcd.print("Done.");
-          delay(MESSAGE_WAIT_TIME);
+          spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
           _softRestart();
         }
         else
         {
           lcd.setCursor(0, 1);
           lcd.print("Canceled.");
-          delay(MESSAGE_WAIT_TIME);
+          spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
           LCDML.FUNC_goBackToMenu();
         }
       }
@@ -3751,7 +3774,7 @@ void UI_func_eeprom_reset(uint8_t param)
   {
     lcd.setCursor(0, 1);
     lcd.print("Canceled.");
-    delay(MESSAGE_WAIT_TIME);
+    spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
 
     encoderDir[ENC_R].reset();
   }
@@ -4067,7 +4090,7 @@ void UI_func_load_performance(uint8_t param)
 
           lcd.print("Done.           ");
         }
-        delay(MESSAGE_WAIT_TIME);
+        spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
 
         LCDML.FUNC_goBackToMenu();
       }
@@ -4084,7 +4107,7 @@ void UI_func_load_performance(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
     else
       eeprom_update_performance();
@@ -4160,7 +4183,7 @@ void UI_func_save_performance(uint8_t param)
             }
             save_sd_performance(configuration.sys.performance_number);
             lcd.show(1, 0, 16, "Done.");
-            delay(MESSAGE_WAIT_TIME);
+            spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
             LCDML.FUNC_goBackToMenu();
           }
           else if (overwrite == true && yesno == false)
@@ -4205,7 +4228,7 @@ void UI_func_save_performance(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
 
     EEPROM.update(EEPROM_START_ADDRESS + offsetof(configuration_s, sys.performance_number), configuration.sys.performance_number);
@@ -4273,7 +4296,7 @@ void UI_func_load_voiceconfig(uint8_t param)
         else
           lcd.print("Done.           ");
 
-        delay(MESSAGE_WAIT_TIME);
+        spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
 
         LCDML.FUNC_goBackToMenu();
       }
@@ -4299,7 +4322,7 @@ void UI_func_load_voiceconfig(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
     else
       eeprom_update_dexed(selected_instance_id);
@@ -4399,7 +4422,7 @@ void UI_func_save_voiceconfig(uint8_t param)
             }
             save_sd_voiceconfig(configuration.performance.voiceconfig_number[selected_instance_id], selected_instance_id);
             lcd.show(1, 0, 16, "Done.");
-            delay(MESSAGE_WAIT_TIME);
+            spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
             LCDML.FUNC_goBackToMenu();
           }
           else if (overwrite == true && yesno == false)
@@ -4450,7 +4473,7 @@ void UI_func_save_voiceconfig(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
 
 #if NUM_DEXED > 1
@@ -4505,7 +4528,7 @@ void UI_func_load_fx(uint8_t param)
         else
           lcd.print("Done.           ");
 
-        delay(MESSAGE_WAIT_TIME);
+        spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
 
         LCDML.FUNC_goBackToMenu();
       }
@@ -4522,7 +4545,7 @@ void UI_func_load_fx(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
     else
       eeprom_update_fx();
@@ -4602,7 +4625,7 @@ void UI_func_save_fx(uint8_t param)
 
             lcd.show(1, 0, 16, "Done.");
             LCDML.FUNC_goBackToMenu();
-            delay(MESSAGE_WAIT_TIME);
+            spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
           }
           else if (overwrite == true && yesno == false)
           {
@@ -4646,7 +4669,7 @@ void UI_func_save_fx(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
 
     EEPROM.update(EEPROM_START_ADDRESS + offsetof(configuration_s, performance.fx_number), configuration.performance.fx_number);
@@ -4799,7 +4822,7 @@ void UI_func_save_voice(uint8_t param)
 #endif
 
             lcd.show(1, 0, 16, "Done.");
-            delay(MESSAGE_WAIT_TIME);
+            spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
 
             mode = 0xff;
             break;
@@ -4817,7 +4840,7 @@ void UI_func_save_voice(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
     else
     {
@@ -4984,7 +5007,7 @@ void UI_func_sysex_receive_bank(uint8_t param)
         lcd.noBlink();
         lcd.setCursor(0, 1);
         lcd.print(F("Canceled.       "));
-        delay(MESSAGE_WAIT_TIME);
+        spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
         LCDML.FUNC_goBackToMenu();
       }
     }
@@ -5002,7 +5025,7 @@ void UI_func_sysex_receive_bank(uint8_t param)
     {
       lcd.setCursor(0, 1);
       lcd.print(F("Canceled.       "));
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
   }
 }
@@ -5094,7 +5117,7 @@ void UI_func_sysex_send_bank(uint8_t param)
         bank_number = 0xff;
       }
 
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
       LCDML.FUNC_goBackToMenu();
     }
   }
@@ -5107,7 +5130,7 @@ void UI_func_sysex_send_bank(uint8_t param)
     {
       lcd.setCursor(0, 1);
       lcd.print(F("Canceled.       "));
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
   }
 }
@@ -5233,7 +5256,7 @@ void UI_func_sysex_send_voice(uint8_t param)
                 lcd.show(1, 11, 2, configuration.dexed[selected_instance_id].midi_channel + 1);
                 send_sysex_voice(configuration.dexed[selected_instance_id].midi_channel, voice_data);
               }
-              delay(MESSAGE_WAIT_TIME);
+              spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
               lcd.show(1, 0, 16, "Done.");
               sysex.close();
 
@@ -5247,7 +5270,7 @@ void UI_func_sysex_send_voice(uint8_t param)
           }
 
           mode = 0xff;
-          delay(MESSAGE_WAIT_TIME);
+          spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
           LCDML.FUNC_goBackToMenu();
 
           break;
@@ -5260,7 +5283,7 @@ void UI_func_sysex_send_voice(uint8_t param)
     if (mode < 0xff)
     {
       lcd.show(1, 0, 16, "Canceled.");
-      delay(MESSAGE_WAIT_TIME);
+      spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
     }
     encoderDir[ENC_R].reset();
   }

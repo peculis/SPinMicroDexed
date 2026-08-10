@@ -336,6 +336,16 @@ static void spin_report_diagnostics()
   Serial.print('/');
   Serial.print(spin_cat5_din.unmatched_note_off);
 #endif
+#if defined(SPIN_CAT6_USB_MIDI_TEST) && defined(MIDI_DEVICE_USB)
+  Serial.print(F(" USB(on/off/held/unmatched)="));
+  Serial.print(spin_cat6_usb.note_on);
+  Serial.print('/');
+  Serial.print(spin_cat6_usb.note_off);
+  Serial.print('/');
+  Serial.print(spin_cat6_usb.held_count);
+  Serial.print('/');
+  Serial.print(spin_cat6_usb.unmatched_note_off);
+#endif
   Serial.println();
 }
 #endif
@@ -560,6 +570,9 @@ void setup()
 #ifdef SPIN_CAT5_RAW_UART_PROBE
   Serial.println(F("[CAT5-RAW] Raw Serial1 probe active before PJRC MIDI parsing."));
 #endif
+#endif
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+  Serial.println(F("[CAT6-USB] Onboard USB MIDI device test active; CAT5 raw DIN logging disabled."));
 #endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;

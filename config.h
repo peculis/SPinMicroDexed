@@ -108,8 +108,9 @@
 #define SPIN_DIAGNOSTICS 1 // CAT 2: nonblocking hardware/health telemetry
 //#define SPIN_CAT3_AUDIO_TEST 1 // CAT 3 passed; diagnostic tones disabled
 //#define SPIN_CAT4_UI_TEST 1 // CAT 4 passed
-#define SPIN_CAT5_DIN_MIDI_TEST 1 // Transport-level DIN MIDI acceptance
-#define SPIN_CAT5_RAW_UART_PROBE 1 // Peek at Serial1 before the MIDI parser
+//#define SPIN_CAT5_DIN_MIDI_TEST 1 // CAT 5 passed
+//#define SPIN_CAT5_RAW_UART_PROBE 1 // CAT 5 only; raw logging disabled
+#define SPIN_CAT6_USB_MIDI_TEST 1 // Teensy onboard USB MIDI device acceptance
 //#define SPIN_CONTROL_DIAGNOSTICS 1 // CAT 2/4 only; suppress encoder log traffic
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000

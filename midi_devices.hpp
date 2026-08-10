@@ -1178,8 +1178,82 @@ void handleSystemReset_MIDI_DEVICE_USB_HOST(void)
    MIDI_DEVICE_USB
  *****************************************/
 #ifdef MIDI_DEVICE_USB
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+struct SpinCat6UsbStats
+{
+  uint32_t note_on = 0;
+  uint32_t note_off = 0;
+  uint32_t control_change = 0;
+  uint32_t program_change = 0;
+  uint32_t pitch_bend = 0;
+  uint32_t unmatched_note_off = 0;
+  uint16_t held_count = 0;
+  uint8_t held[16][16] = {{0}};
+};
+
+SpinCat6UsbStats spin_cat6_usb;
+
+static bool spin_cat6_usb_note_is_held(byte channel, byte note)
+{
+  if (channel < 1 || channel > 16 || note > 127)
+    return false;
+  return spin_cat6_usb.held[channel - 1][note >> 3] & (1U << (note & 7));
+}
+
+static void spin_cat6_usb_set_note(byte channel, byte note, bool held)
+{
+  if (channel < 1 || channel > 16 || note > 127)
+    return;
+  uint8_t &slot = spin_cat6_usb.held[channel - 1][note >> 3];
+  const uint8_t mask = 1U << (note & 7);
+  if (held)
+    slot |= mask;
+  else
+    slot &= ~mask;
+}
+
+static void spin_cat6_usb_log_note(bool on, byte channel, byte note, byte velocity)
+{
+  const bool was_held = spin_cat6_usb_note_is_held(channel, note);
+  if (on)
+  {
+    spin_cat6_usb.note_on++;
+    if (!was_held)
+    {
+      spin_cat6_usb_set_note(channel, note, true);
+      spin_cat6_usb.held_count++;
+    }
+  }
+  else
+  {
+    spin_cat6_usb.note_off++;
+    if (was_held)
+    {
+      spin_cat6_usb_set_note(channel, note, false);
+      if (spin_cat6_usb.held_count > 0)
+        spin_cat6_usb.held_count--;
+    }
+    else
+      spin_cat6_usb.unmatched_note_off++;
+  }
+
+  Serial.print(on ? F("[CAT6-USB] NoteOn") : F("[CAT6-USB] NoteOff"));
+  Serial.print(F(" ch="));
+  Serial.print(channel);
+  Serial.print(F(" note="));
+  Serial.print(note);
+  Serial.print(F(" velocity="));
+  Serial.print(velocity);
+  Serial.print(F(" held="));
+  Serial.println(spin_cat6_usb.held_count);
+}
+#endif
+
 void handleNoteOn_MIDI_DEVICE_USB(byte inChannel, byte inNumber, byte inVelocity)
 {
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+  spin_cat6_usb_log_note(true, inChannel, inNumber, inVelocity);
+#endif
   handleNoteOn(inChannel, inNumber, inVelocity);
 #ifdef DEBUG
   Serial.print(F("[MIDI_USB] NoteOn"));
@@ -1206,6 +1280,9 @@ void handleNoteOn_MIDI_DEVICE_USB(byte inChannel, byte inNumber, byte inVelocity
 
 void handleNoteOff_MIDI_DEVICE_USB(byte inChannel, byte inNumber, byte inVelocity)
 {
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+  spin_cat6_usb_log_note(false, inChannel, inNumber, inVelocity);
+#endif
   handleNoteOff(inChannel, inNumber, inVelocity);
 #ifdef DEBUG
   Serial.print(F("[MIDI_USB] NoteOff"));
@@ -1232,6 +1309,15 @@ void handleNoteOff_MIDI_DEVICE_USB(byte inChannel, byte inNumber, byte inVelocit
 
 void handleControlChange_MIDI_DEVICE_USB(byte inChannel, byte inData1, byte inData2)
 {
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+  spin_cat6_usb.control_change++;
+  Serial.print(F("[CAT6-USB] CC ch="));
+  Serial.print(inChannel);
+  Serial.print(F(" number="));
+  Serial.print(inData1);
+  Serial.print(F(" value="));
+  Serial.println(inData2);
+#endif
   handleControlChange(inChannel, inData1, inData2);
 #ifdef DEBUG
   Serial.print(F("[MIDI_USB] CC"));
@@ -1284,6 +1370,13 @@ void handleAfterTouch_MIDI_DEVICE_USB(byte inChannel, byte inPressure)
 
 void handlePitchBend_MIDI_DEVICE_USB(byte inChannel, int inPitch)
 {
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+  spin_cat6_usb.pitch_bend++;
+  Serial.print(F("[CAT6-USB] PitchBend ch="));
+  Serial.print(inChannel);
+  Serial.print(F(" value="));
+  Serial.println(inPitch);
+#endif
   handlePitchBend(inChannel, inPitch);
 #ifdef DEBUG
   Serial.print(F("[MIDI_USB] PB"));
@@ -1310,6 +1403,13 @@ void handlePitchBend_MIDI_DEVICE_USB(byte inChannel, int inPitch)
 
 void handleProgramChange_MIDI_DEVICE_USB(byte inChannel, byte inProgram)
 {
+#ifdef SPIN_CAT6_USB_MIDI_TEST
+  spin_cat6_usb.program_change++;
+  Serial.print(F("[CAT6-USB] ProgramChange ch="));
+  Serial.print(inChannel);
+  Serial.print(F(" program="));
+  Serial.println(inProgram);
+#endif
   handleProgramChange(inChannel, inProgram);
 #ifdef DEBUG
   Serial.print(F("[MIDI_USB] PC"));

@@ -125,7 +125,7 @@ AudioConnection          patchCord7(master_mixer_l, volume_l);
 AudioConnection          patchCord10(volume_r, 0, stereo2mono, 0);
 AudioConnection          patchCord11(volume_l, 0, stereo2mono, 1);
 AudioConnection          patchCord12(stereo2mono, 0, master_peak_r, 0);
-AudioConnection          patchCord13(stereo2mono, 0, master_peak_l, 0);
+AudioConnection          patchCord13(stereo2mono, 1, master_peak_l, 0);
 
 // Outputs
 #if defined(TEENSY_AUDIO_BOARD)
@@ -326,6 +326,18 @@ static void spin_report_diagnostics()
   Serial.print(AudioMemoryUsage());
   Serial.print('/');
   Serial.print(AudioMemoryUsageMax());
+#ifdef SPIN_CAT7_USB_AUDIO_TEST
+  Serial.print(F(" OutPeak(ch0/ch1)="));
+  if (master_peak_r.available())
+    Serial.print(master_peak_r.read(), 3);
+  else
+    Serial.print(F("n/a"));
+  Serial.print('/');
+  if (master_peak_l.available())
+    Serial.print(master_peak_l.read(), 3);
+  else
+    Serial.print(F("n/a"));
+#endif
 #if defined(SPIN_CAT5_DIN_MIDI_TEST) && defined(MIDI_DEVICE_DIN)
   Serial.print(F(" DIN(on/off/held/unmatched)="));
   Serial.print(spin_cat5_din.note_on);
@@ -573,6 +585,9 @@ void setup()
 #endif
 #ifdef SPIN_CAT6_USB_MIDI_TEST
   Serial.println(F("[CAT6-USB] USB MIDI counter test active; no Serial output inside USB callbacks."));
+#endif
+#ifdef SPIN_CAT7_USB_AUDIO_TEST
+  Serial.println(F("[CAT7-AUDIO] Stereo signal feeds Audio Shield I2S and USB Audio simultaneously."));
 #endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;

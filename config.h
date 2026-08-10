@@ -108,13 +108,13 @@
 #define SPIN_DIAGNOSTICS 1 // CAT 2: nonblocking hardware/health telemetry
 //#define SPIN_CAT3_AUDIO_TEST 1 // CAT 3 passed; diagnostic tones disabled
 //#define SPIN_CAT4_UI_TEST 1 // CAT 4 passed
-#define SPIN_CAT5_DIN_MIDI_TEST 1 // CAT 8 recovery: count DIN events without callback printing
+//#define SPIN_CAT5_DIN_MIDI_TEST 1 // CAT 5 passed; verbose DIN logging disabled
 //#define SPIN_CAT5_RAW_UART_PROBE 1 // CAT 5 only; raw logging disabled
 #define SPIN_CAT6_USB_MIDI_TEST 1 // CAT 8 recovery: count USB events without callback printing
 //#define SPIN_CAT7_USB_AUDIO_TEST 1 // CAT 7 passed
 #define SPIN_CAT8_STATIC_MIDI_INDICATOR 1 // Remove runtime CGRAM animation
 #define SPIN_CAT8_DISABLE_MIDI_LCD_WRITES 1 // Recovery test: no LCD I2C writes on Note On/Off
-#define SPIN_CAT8_FORCE_VELOCITY_100 1 // Recovery test: remove keyboard velocity variation
+//#define SPIN_CAT8_FORCE_VELOCITY_100 1 // Recovery test passed; natural velocity restored
 //#define SPIN_CONTROL_DIAGNOSTICS 1 // CAT 2/4 only; suppress encoder log traffic
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000

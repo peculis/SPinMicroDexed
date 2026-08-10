@@ -30,6 +30,14 @@
 #include "midinotes.h"
 #include "teensy_board_detection.h"
 
+// SPinMicroDexed CAT 1 hardware profile, 10 August 2026.
+// This first executable target is intentionally limited to the validated
+// SPinSynth-T-LCD hardware: Teensy 4.0, PJRC Audio Shield Rev D/D2,
+// KEYES 3.3 V LCD1602, two encoders, DIN MIDI and USB MIDI/Audio.
+#if !defined(ARDUINO_TEENSY40)
+#error "SPinMicroDexed CAT 1 supports only Teensy 4.0. Select Teensy 4.0 in Tools > Board."
+#endif
+
 // ATTENTION! For better latency you have to redefine AUDIO_BLOCK_SAMPLES from
 // 128 to 64 in <ARDUINO-IDE-DIR>/cores/teensy3/AudioStream.h
 
@@ -69,7 +77,8 @@
 //*************************************************************************************************
 #define MIDI_DEVICE_DIN Serial1
 #define MIDI_DEVICE_USB 1
-#define MIDI_DEVICE_USB_HOST 1
+// USB Host MIDI is deferred until the basic hardware configuration is stable.
+//#define MIDI_DEVICE_USB_HOST 1
 
 //*************************************************************************************************
 //* AUDIO HARDWARE SETTINGS
@@ -105,9 +114,9 @@
 #define DEXED_ENGINE DEXED_ENGINE_MODERN // DEXED_ENGINE_MARKI // DEXED_ENGINE_OPL
 
 // Number of Dexed instances
-#define NUM_DEXED 2 // 1 or 2 - nothing else!
+#define NUM_DEXED 1 // CAT 1 reliability baseline
 // FX-CHAIN ENABLE/DISABLE
-#define USE_FX 1
+//#define USE_FX 1
 // CHORUS parameters
 #define MOD_DELAY_SAMPLE_BUFFER int32_t(TIME_MS2SAMPLES(20.0)) // 20.0 ms delay buffer. 
 #define MOD_WAVEFORM WAVEFORM_TRIANGLE // WAVEFORM_SINE WAVEFORM_TRIANGLE WAVEFORM_SAWTOOTH WAVEFORM_SAWTOOTH_REVERSE
@@ -115,12 +124,12 @@
 #define MOD_FILTER_CUTOFF_HZ 2000
 // SGTL5000
 #ifdef TEENSY_AUDIO_BOARD
-#define SGTL5000_AUDIO_ENHANCE 1
+//#define SGTL5000_AUDIO_ENHANCE 1
 //#define SGTL5000_AUDIO_THRU 1
-#define SGTL5000_HEADPHONE_VOLUME 0.8
+#define SGTL5000_HEADPHONE_VOLUME 0.85
 #endif
 #if defined(TEENSY4)
-#define USE_PLATEREVERB 1
+//#define USE_PLATEREVERB 1
 #endif
 
 //*************************************************************************************************
@@ -226,10 +235,10 @@
 //* HARDWARE SETTINGS
 //*************************************************************************************************
 
-// Teensy Audio Shield
+// PJRC Teensy Audio Shield Rev D/D2 microSD on the Teensy 4.0 SPI bus.
 #define SDCARD_AUDIO_CS_PIN    10
-#define SDCARD_AUDIO_MOSI_PIN  7
-#define SDCARD_AUDIO_SCK_PIN   14
+#define SDCARD_AUDIO_MOSI_PIN  11
+#define SDCARD_AUDIO_SCK_PIN   13
 #ifndef TEENSY4
 // Teensy 3.5 & 3.6 SD card
 #define SDCARD_TEENSY_CS_PIN    BUILTIN_SDCARD
@@ -244,8 +253,8 @@
 // Encoder with button
 //#define ENCODER_USE_INTERRUPTS
 #define NUM_ENCODER 2
-#define ENC_L_PIN_A  3
-#define ENC_L_PIN_B  2
+#define ENC_L_PIN_A  2
+#define ENC_L_PIN_B  3
 #define BUT_L_PIN    4
 #if defined(TEENSY3_6)
 #define ENC_R_PIN_A  28
@@ -253,15 +262,35 @@
 #define BUT_R_PIN    30
 #else
 #if defined(TEENSY4_0)
-#define ENC_R_PIN_A  6
-#define ENC_R_PIN_B  5
-#define BUT_R_PIN    8
+#define ENC_R_PIN_A  5
+#define ENC_R_PIN_B  9
+#define BUT_R_PIN    14
 #else // ARDUINO_TEENSY41
 #define ENC_R_PIN_A  24
 #define ENC_R_PIN_B  5
 #define BUT_R_PIN    9
 #endif
 #endif
+
+// Audio Shield Rev D/D2 reservations on Teensy 4.0:
+// I2S RX=7, TX=8, LRCLK=20, BCLK=21, MCLK=23; SD=10..13;
+// I2C SDA=18 and SCL=19. Fail the build if a control is moved onto one of
+// those pins in a future configuration edit.
+#define SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(pin) \
+  ((pin) == 7 || (pin) == 8 || \
+   ((pin) >= 10 && (pin) <= 13) || \
+   ((pin) >= 18 && (pin) <= 21) || (pin) == 23)
+
+#if SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(ENC_L_PIN_A) || \
+    SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(ENC_L_PIN_B) || \
+    SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(BUT_L_PIN) || \
+    SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(ENC_R_PIN_A) || \
+    SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(ENC_R_PIN_B) || \
+    SPIN_CONTROL_USES_AUDIO_SHIELD_PIN(BUT_R_PIN)
+#error "SPinMicroDexed encoder/button pin conflicts with the PJRC Audio Shield Rev D/D2."
+#endif
+
+#undef SPIN_CONTROL_USES_AUDIO_SHIELD_PIN
 #define BUT_DEBOUNCE_MS 20
 #define LONG_BUTTON_PRESS 500
 

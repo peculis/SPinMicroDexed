@@ -17,9 +17,21 @@ intact until the basic system is building and operating reliably.
 
 ## Status
 
-This repository currently contains an unmodified source baseline copied from
-MicroDexed `master`, followed by project documentation. Hardware adaptation work
-has not yet been applied.
+The imported MicroDexed baseline has passed CAT 0 compilation. CAT 1 adds the
+initial conflict-free SPinSynth-T-LCD hardware profile and is ready for its first
+hardware smoke test. Later CATs will add diagnostics and remove blocking LCD/UI
+behavior before the full performance test.
+
+## CAT 1 Arduino build settings
+
+- Board: Teensy 4.0
+- CPU speed: 600 MHz
+- USB type: Serial + MIDI + Audio
+- Optimization: Faster
+
+Open `SPinMicroDexed.ino` from this repository. Do not select a different Teensy
+board: the CAT 1 configuration deliberately stops compilation unless Teensy 4.0
+is selected.
 
 The validated SPinSynth hardware baseline is recorded in
 [`docs/SPINSYNTH_T_LCD_HARDWARE.md`](docs/SPINSYNTH_T_LCD_HARDWARE.md).

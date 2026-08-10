@@ -21,6 +21,10 @@
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
+// SPinMicroDexed hardware adaptation by Ricardo Peculis.
+// CAT 1 changes, 10 August 2026: Teensy 4.0 / Audio Shield Rev D/D2
+// hardware profile. Original MicroDexed copyright and license retained above.
+
 #include <limits.h>
 #include "config.h"
 #include <Audio.h>

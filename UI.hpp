@@ -413,6 +413,9 @@ long  g_LCDML_CONTROL_button_press_time[NUM_ENCODER] = {0, 0};
 bool  g_LCDML_CONTROL_button_prev[NUM_ENCODER] = {HIGH, HIGH};
 uint8_t g_LCDML_CONTROL_prev[NUM_ENCODER] = {0, 0};
 bool menu_init = true;
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+bool spin_voice_screen_dirty = true;
+#endif
 
 #ifdef U8X8_DISPLAY
 const uint8_t * flipped_scroll_bar[5];
@@ -3760,6 +3763,7 @@ void UI_func_voice_select(uint8_t param)
 
   if (LCDML.FUNC_setup())         // ****** SETUP *********
   {
+    spin_voice_screen_dirty = true;
     encoderDir[ENC_R].reset();
 
     lcd_active_instance_number(selected_instance_id);
@@ -3793,6 +3797,7 @@ void UI_func_voice_select(uint8_t param)
 
     if ((LCDML.BT_checkDown() && encoderDir[ENC_R].Down()) || (LCDML.BT_checkUp() && encoderDir[ENC_R].Up()) || (LCDML.BT_checkEnter() && (encoderDir[ENC_R].ButtonShort() || encoderDir[ENC_R].ButtonLong())))
     {
+      spin_voice_screen_dirty = true;
       uint8_t bank_tmp;
       int8_t voice_tmp;
 
@@ -3899,45 +3904,50 @@ void UI_func_voice_select(uint8_t param)
 #endif
     }
 
-    if (strlen(g_bank_name[selected_instance_id]) > 0)
+    if (spin_voice_screen_dirty)
     {
-      strcpy(bank_name, g_bank_name[selected_instance_id]);
-    }
-    else
-    {
-      if (!get_bank_name(configuration.performance.bank[selected_instance_id], bank_name, sizeof(bank_name)))
-        strcpy(bank_name, "*ERROR*");
-    }
+      spin_voice_screen_dirty = false;
 
-    if (strlen(g_voice_name[selected_instance_id]) > 0)
-    {
-      strcpy(voice_name, g_voice_name[selected_instance_id]);
-    }
-    else
-    {
-      if (!get_voice_by_bank_name(configuration.performance.bank[selected_instance_id], bank_name, configuration.performance.voice[selected_instance_id], voice_name, sizeof(voice_name)))
-        strcpy(voice_name, "*ERROR*");
-    }
+      if (strlen(g_bank_name[selected_instance_id]) > 0)
+      {
+        strcpy(bank_name, g_bank_name[selected_instance_id]);
+      }
+      else
+      {
+        if (!get_bank_name(configuration.performance.bank[selected_instance_id], bank_name, sizeof(bank_name)))
+          strcpy(bank_name, "*ERROR*");
+      }
 
-    lcd.show(0, 0, 2, configuration.performance.bank[selected_instance_id]);
-    lcd.show(1, 0, 2, configuration.performance.voice[selected_instance_id] + 1);
-    lcd.show(0, 3, 10, bank_name);
-    lcd.show(1, 3, 10, voice_name);
+      if (strlen(g_voice_name[selected_instance_id]) > 0)
+      {
+        strcpy(voice_name, g_voice_name[selected_instance_id]);
+      }
+      else
+      {
+        if (!get_voice_by_bank_name(configuration.performance.bank[selected_instance_id], bank_name, configuration.performance.voice[selected_instance_id], voice_name, sizeof(voice_name)))
+          strcpy(voice_name, "*ERROR*");
+      }
 
-    switch (menu_voice_select)
-    {
-      case MENU_VOICE_BANK:
-        lcd.show(0, 2, 1, "[");
-        lcd.show(0, 13, 1, "]");
-        lcd.show(1, 2, 1, " ");
-        lcd.show(1, 13, 1, " ");
-        break;
-      case MENU_VOICE_SOUND:
-        lcd.show(0, 2, 1, " ");
-        lcd.show(0, 13, 1, " ");
-        lcd.show(1, 2, 1, "[");
-        lcd.show(1, 13, 1, "]");
-        break;
+      lcd.show(0, 0, 2, configuration.performance.bank[selected_instance_id]);
+      lcd.show(1, 0, 2, configuration.performance.voice[selected_instance_id] + 1);
+      lcd.show(0, 3, 10, bank_name);
+      lcd.show(1, 3, 10, voice_name);
+
+      switch (menu_voice_select)
+      {
+        case MENU_VOICE_BANK:
+          lcd.show(0, 2, 1, "[");
+          lcd.show(0, 13, 1, "]");
+          lcd.show(1, 2, 1, " ");
+          lcd.show(1, 13, 1, " ");
+          break;
+        case MENU_VOICE_SOUND:
+          lcd.show(0, 2, 1, " ");
+          lcd.show(0, 13, 1, " ");
+          lcd.show(1, 2, 1, "[");
+          lcd.show(1, 13, 1, "]");
+          break;
+      }
     }
   }
 

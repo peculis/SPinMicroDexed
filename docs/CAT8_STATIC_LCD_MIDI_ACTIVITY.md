@@ -20,9 +20,18 @@ writes the cached glyph only on the idle-to-playing transition and writes one
 blank only on the playing-to-idle transition. No custom character is generated
 per animation frame. Menus and encoder mappings are unchanged.
 
+The first hardware measurement then exposed a second issue: the voice function
+rewrote its complete bank/voice display on every foreground-loop pass, whether
+or not any value had changed. Reported maximum MIDI-poll gaps were approximately
+2.6--2.7 ms, with one 90.985 ms first-event outlier. Part of that measurement
+also included the five-second Serial health report itself. The refined CAT 8
+caches the screen state, redraws only on screen entry or an actual bank/voice/
+row/program-change action, and excludes diagnostic printing from the poll-gap
+measurement. The static note indicator remains independently edge-driven.
+
 CAT 8 also measures the maximum interval between foreground MIDI polls. Each
 five-second health report contains `MidiPollMaxUs=...` and resets that maximum
-for the next interval. The report itself can influence the following interval,
+for the next interval. Time spent printing that report is explicitly excluded,
 so compare repeated values and large outliers rather than treating it as a
 hard-real-time benchmark.
 

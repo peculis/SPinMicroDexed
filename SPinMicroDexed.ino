@@ -728,6 +728,10 @@ void loop()
   {
     spin_diagnostic_timer -= 5000;
     spin_report_diagnostics();
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+    // Do not count the deliberately slow Serial health report as MIDI latency.
+    spin_cat8_midi_poll_timer = 0;
+#endif
   }
 #endif
 
@@ -1110,6 +1114,9 @@ void handleProgramChange(byte inChannel, byte inProgram)
       change_disp_sd(false);
 #endif
       load_sd_voice(configuration.performance.bank[instance_id], configuration.performance.voice[instance_id], instance_id);
+#ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
+      spin_voice_screen_dirty = true;
+#endif
 #ifdef DISPLAY_LCD_SPI
       change_disp_sd(true);
 #endif

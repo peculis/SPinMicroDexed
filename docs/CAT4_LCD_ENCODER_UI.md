@@ -2,6 +2,20 @@
 
 Date: 10 August 2026
 
+## Status
+
+**PASS on target hardware.** The user confirmed that all nine acceptance actions
+worked: voice-number adjustment, bank/voice row selection, bank adjustment,
+root-menu entry, menu navigation, enter, back, direct return, and volume-page
+operation. CAT 3 tones were disabled for this test.
+
+The inherited interaction model was initially confusing even though it worked
+as implemented. In particular, right-short has no voice-screen action,
+right-long changes meaning by context, and the left control combines volume,
+menu/back and panic roles. This is recorded as a later usability-improvement
+candidate, not a CAT 4 hardware or functional failure. Major UI changes remain
+deferred until the basic synthesizer path is working.
+
 ## Objective
 
 Validate the existing LCDMenuLib2-based MicroDexed interface on the KEYES

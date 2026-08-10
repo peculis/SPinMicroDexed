@@ -2,6 +2,24 @@
 
 Date: 10 August 2026
 
+## Status
+
+**PASS on target hardware.** USB MIDI triggered the built-in voice while audio
+remained audible from the Audio Shield and was simultaneously received,
+monitored through the selected audio interface/speakers, and recorded by Logic.
+The initially tiny waveform was a low master-volume setting, not a USB Audio
+failure.
+
+With the master volume set to 100, repeated strong-chord peaks measured
+0.394--0.418 on both channels (approximately -8.1 to -7.6 dBFS), providing a
+healthy recording level with headroom and confirming balanced stereo output.
+Peak Audio CPU remained 7.1%, Audio Memory peaked at 13 blocks, temperature was
+approximately 54 degrees C, and the system remained stable beyond 41 minutes.
+
+No additional firmware gain is required. The inherited `pow(value, 2.2)` master
+volume curve explains the large level change at lower settings; its feel may be
+reviewed later as a UI/gain-law improvement rather than an audio-path defect.
+
 ## Objective
 
 Validate that synthesized audio is delivered simultaneously to the PJRC Audio

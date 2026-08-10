@@ -572,7 +572,7 @@ void setup()
 #endif
 #endif
 #ifdef SPIN_CAT6_USB_MIDI_TEST
-  Serial.println(F("[CAT6-USB] Onboard USB MIDI device test active; CAT5 raw DIN logging disabled."));
+  Serial.println(F("[CAT6-USB] USB MIDI counter test active; no Serial output inside USB callbacks."));
 #endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;

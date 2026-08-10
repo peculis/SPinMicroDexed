@@ -1237,15 +1237,6 @@ static void spin_cat6_usb_log_note(bool on, byte channel, byte note, byte veloci
       spin_cat6_usb.unmatched_note_off++;
   }
 
-  Serial.print(on ? F("[CAT6-USB] NoteOn") : F("[CAT6-USB] NoteOff"));
-  Serial.print(F(" ch="));
-  Serial.print(channel);
-  Serial.print(F(" note="));
-  Serial.print(note);
-  Serial.print(F(" velocity="));
-  Serial.print(velocity);
-  Serial.print(F(" held="));
-  Serial.println(spin_cat6_usb.held_count);
 }
 #endif
 
@@ -1311,12 +1302,6 @@ void handleControlChange_MIDI_DEVICE_USB(byte inChannel, byte inData1, byte inDa
 {
 #ifdef SPIN_CAT6_USB_MIDI_TEST
   spin_cat6_usb.control_change++;
-  Serial.print(F("[CAT6-USB] CC ch="));
-  Serial.print(inChannel);
-  Serial.print(F(" number="));
-  Serial.print(inData1);
-  Serial.print(F(" value="));
-  Serial.println(inData2);
 #endif
   handleControlChange(inChannel, inData1, inData2);
 #ifdef DEBUG
@@ -1372,10 +1357,6 @@ void handlePitchBend_MIDI_DEVICE_USB(byte inChannel, int inPitch)
 {
 #ifdef SPIN_CAT6_USB_MIDI_TEST
   spin_cat6_usb.pitch_bend++;
-  Serial.print(F("[CAT6-USB] PitchBend ch="));
-  Serial.print(inChannel);
-  Serial.print(F(" value="));
-  Serial.println(inPitch);
 #endif
   handlePitchBend(inChannel, inPitch);
 #ifdef DEBUG
@@ -1405,10 +1386,6 @@ void handleProgramChange_MIDI_DEVICE_USB(byte inChannel, byte inProgram)
 {
 #ifdef SPIN_CAT6_USB_MIDI_TEST
   spin_cat6_usb.program_change++;
-  Serial.print(F("[CAT6-USB] ProgramChange ch="));
-  Serial.print(inChannel);
-  Serial.print(F(" program="));
-  Serial.println(inProgram);
 #endif
   handleProgramChange(inChannel, inProgram);
 #ifdef DEBUG

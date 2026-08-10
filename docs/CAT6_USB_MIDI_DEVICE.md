@@ -14,9 +14,10 @@ remain enabled.
 
 ## Instrumentation
 
-USB Note On and Note Off callbacks report channel, note, velocity and held-note
-count. USB Control Change, Program Change and Pitch Bend report their values.
-The five-second health line ends with:
+USB callbacks update counters and held-note state but deliberately perform no
+USB Serial printing. Printing from a USB MIDI callback can re-enter the Teensy
+composite USB stack while it is servicing another endpoint. The five-second
+main-loop health line safely reports:
 
 ```text
 USB(on/off/held/unmatched)=noteOn/noteOff/held/unmatchedOff
@@ -30,8 +31,8 @@ USB(on/off/held/unmatched)=noteOn/noteOff/held/unmatchedOff
    `[CAT6-USB] Onboard USB MIDI device test active ...`.
 3. Route the KeyLab or a DAW/software keyboard to the Teensy USB MIDI
    destination on channel 1. Avoid using the DIN cable for this test.
-4. Play slow individual notes with different velocities. Confirm matching USB
-   NoteOn/NoteOff messages and values.
+4. Play one slow individual note, then wait for the next health report. Confirm
+   the USB NoteOn/NoteOff totals each increased by one and held returned to 0.
 5. Hold and release a three-note chord. Confirm held reaches 3 and returns to 0.
 6. Send pitch bend and a CC if convenient; confirm their decoded values.
 7. Play for one minute. Confirm balanced totals, held 0, unmatched 0, continuing
@@ -40,3 +41,11 @@ USB(on/off/held/unmatched)=noteOn/noteOff/held/unmatchedOff
 No audible synthesis is required because no DX7 patch is loaded. CAT 6 passes
 when the USB callbacks and counters behave correctly and the composite USB
 Serial/MIDI/Audio device remains stable.
+
+## First-run fault and isolation
+
+The first CAT 6 build printed each event from inside its USB MIDI callback and
+faulted on target with a Teensy 4.x `DACCVIOL` Data Access Violation when a key
+was pressed. DIN MIDI had already exercised the same synthesis handler without
+a fault. Callback-time Serial output was therefore removed as the first
+controlled isolation step; only periodic main-loop reporting remains.

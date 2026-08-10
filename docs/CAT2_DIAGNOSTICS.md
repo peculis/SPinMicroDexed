@@ -16,6 +16,9 @@ changing the synthesizer, MIDI, menu, storage or audio architecture.
 - Report microSD presence, uptime, processor temperature, current/maximum Audio
   CPU use and current/maximum Audio Memory use every five seconds.
 - Log detected rotations and button edges for both encoders as they occur.
+- Correct the upstream unsigned SD-card sentinel bug: no card or an unusable
+  card now returns `0` instead of wrapping `-1` to `255` and incorrectly
+  entering SD-dependent initialization.
 
 The diagnostics contain no `delay()` calls and do not write to the LCD. They
 also deliberately leave the built-in LED untouched: its pin 13 is the Audio

@@ -2116,18 +2116,18 @@ uint8_t check_sd_cards(void)
     }
   }
 
-  if (ret >= 0)
+  if (ret > 0)
   {
     if (!card.init(SPI_HALF_SPEED, ret))
     {
 #ifdef DEBUG
       Serial.println(F("SD card initialization failed."));
 #endif
-      ret = -1;
+      ret = 0;
     }
   }
 
-  if (ret >= 0)
+  if (ret > 0)
   {
 #ifdef DEBUG
     Serial.print(F("Card type: "));
@@ -2163,11 +2163,11 @@ uint8_t check_sd_cards(void)
 #ifdef DEBUG
       Serial.println(F("Could not find FAT16/FAT32 partition."));
 #endif
-      ret = -1;
+      ret = 0;
     }
   }
 
-  if (ret >= 0)
+  if (ret > 0)
   {
     uint32_t volumesize;
 

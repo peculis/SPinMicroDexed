@@ -2,6 +2,21 @@
 
 Date: 10 August 2026
 
+## Status
+
+**PASS on target hardware after the engine-initialization correction.** Logic
+showed USB MIDI arriving, the built-in FM-piano voice sounded through the Audio
+Shield, and the system ran beyond 18 minutes under active playing without a
+fault or USB disconnect.
+
+Final counters were 735 Note On, 735 Note Off, zero held and zero unmatched
+releases. Intermediate held counts of 4 and 8 correctly represented active
+chords before returning to zero. Peak Audio CPU was 10.4%, Audio Memory peaked
+at 13 blocks, and temperature remained approximately 54--55 degrees C.
+
+Logic also briefly received USB Audio, but host monitoring/output routing was
+not accepted here and is deferred to CAT 7.
+
 ## Objective
 
 Validate the Teensy onboard USB MIDI device independently of DIN MIDI, USB Host

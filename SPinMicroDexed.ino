@@ -325,7 +325,18 @@ static void spin_report_diagnostics()
   Serial.print(F("% AudioMem="));
   Serial.print(AudioMemoryUsage());
   Serial.print('/');
-  Serial.println(AudioMemoryUsageMax());
+  Serial.print(AudioMemoryUsageMax());
+#if defined(SPIN_CAT5_DIN_MIDI_TEST) && defined(MIDI_DEVICE_DIN)
+  Serial.print(F(" DIN(on/off/held/unmatched)="));
+  Serial.print(spin_cat5_din.note_on);
+  Serial.print('/');
+  Serial.print(spin_cat5_din.note_off);
+  Serial.print('/');
+  Serial.print(spin_cat5_din.held_count);
+  Serial.print('/');
+  Serial.print(spin_cat5_din.unmatched_note_off);
+#endif
+  Serial.println();
 }
 #endif
 
@@ -543,6 +554,9 @@ void setup()
   Serial.println(F("[CAT2] SPinMicroDexed diagnostics active; report interval 5 seconds."));
 #ifdef SPIN_CAT4_UI_TEST
   Serial.println(F("[CAT4-UI] Existing MicroDexed LCD/menu test active; CAT3 tones disabled."));
+#endif
+#ifdef SPIN_CAT5_DIN_MIDI_TEST
+  Serial.println(F("[CAT5-DIN] DIN MIDI test active on Serial1 RX pin 0; encoder event logging disabled."));
 #endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;

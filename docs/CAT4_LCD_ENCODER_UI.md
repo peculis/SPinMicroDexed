@@ -15,9 +15,11 @@ and do not constitute an LCD or menu failure.
 ## Control behavior in the existing interface
 
 - Right encoder rotation moves or changes the currently selected item.
-- A short right-button press selects/enters.
-- A long right-button press (at least 500 ms) enters the menu from the voice
-  screen, or returns to the voice screen from elsewhere.
+- A short right-button press selects/enters while in menus and parameter pages.
+- On the voice screen, a long right-button press (at least 500 ms) alternates
+  selection between the bank and voice rows. Elsewhere, it returns to the voice
+  screen. A short right press on the voice screen has no assigned action in the
+  original interface.
 - Left encoder rotation opens/changes the volume screen.
 - A short left-button press opens the root menu initially, otherwise returns or
   exits the current screen.
@@ -32,18 +34,17 @@ and do not constitute an LCD or menu failure.
 3. On the voice screen, rotate the right encoder both ways. Confirm the voice
    number changes and matching RIGHT rotation messages appear. The patch name
    remains `*ERROR*` because there is no SD card.
-4. Short-press the right encoder. Confirm the selection brackets alternate
+4. Long-press the right encoder. Confirm the selection brackets alternate
    between the bank row and voice row. Rotate again and confirm the selected
-   number changes.
-5. Long-press the right encoder for approximately one second. Confirm the menu
-   appears. Rotate right through several entries, short-press to enter one
+   number changes. Repeat the long press and confirm selection returns.
+5. Short-press the left encoder from the voice screen to open the root menu.
+   Rotate right through several entries, short-press right to enter one
    non-destructive page such as `Voice`, `Audio`, or `Info`, then long-press
    right to return to the voice screen.
 6. Rotate the left encoder. Confirm the volume page appears and its value
    changes. Short-press left to leave it.
-7. Short-press left from the voice screen. Confirm the root menu appears. Use
-   right rotation and short press to navigate, then use short-left presses to
-   move back out.
+7. Re-enter the root menu with short-left. Use right rotation and short-right
+   to navigate, then use short-left presses to move back out.
 8. Exercise both controls for at least one minute. Confirm clean characters,
    no frozen screen, no unintended selections, continuing five-second health
    reports, and no restart.

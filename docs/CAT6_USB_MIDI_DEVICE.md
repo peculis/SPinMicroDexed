@@ -49,3 +49,14 @@ faulted on target with a Teensy 4.x `DACCVIOL` Data Access Violation when a key
 was pressed. DIN MIDI had already exercised the same synthesis handler without
 a fault. Callback-time Serial output was therefore removed as the first
 controlled isolation step; only periodic main-loop reporting remains.
+
+The callback-safe build faulted again at instruction address `0x14BAE` while
+accessing `0x1DA1F6A`. Symbolizing the exact ELF located the instruction at
+`Dx7Note::compute()` line 299, where `ctrls->core->render()` dereferences the FM
+engine pointer. Source inspection found that the `Dexed` constructor called
+`setEngineType()` while `engineType` was uninitialized. If its indeterminate
+value happened to equal the requested engine, the function returned without
+initializing `controllers.core`. The constructor now sets `engineType` to an
+invalid sentinel and `controllers.core` to null before the mandatory first
+engine selection. This is a latent upstream initialization bug exposed by the
+CAT 6 memory layout, not evidence of a defective USB or Audio Shield interface.

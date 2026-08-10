@@ -86,6 +86,12 @@ Dexed::Dexed(int rate)
 
   sustain = false;
 
+  // setEngineType() returns early when the requested type already matches.
+  // engineType and controllers.core were previously uninitialized here, so a
+  // coincidental match could leave core as an invalid pointer and fault on the
+  // first rendered note in Dx7Note::compute(). Force the first selection.
+  engineType = 0xff;
+  controllers.core = nullptr;
   setEngineType(DEXED_ENGINE);
 }
 

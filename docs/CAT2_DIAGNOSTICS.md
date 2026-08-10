@@ -2,6 +2,17 @@
 
 Date: 10 August 2026
 
+## Status
+
+**PASS on target hardware.** The corrected firmware reported the LCD and
+SGTL5000 I2C devices as present, successful codec initialization, and the
+expected `SD=none` result. Both directions and the push switch of each encoder
+produced their corresponding control events. Three post-upload reports arrived
+at five-second intervals without a crash or unintended restart.
+
+Observed idle measurements were approximately 0.9% Audio CPU, five Audio Memory
+blocks and 54--55 degrees C at 600 MHz.
+
 ## Objective
 
 Add enough visibility to diagnose later hardware and timing tests without

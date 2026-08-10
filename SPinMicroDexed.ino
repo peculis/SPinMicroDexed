@@ -761,6 +761,7 @@ void loop()
 
     if (LCDML.FUNC_getID() == LCDML.OTHER_getIDFromFunction(UI_func_voice_select))
     {
+#ifndef SPIN_CAT8_DISABLE_MIDI_LCD_WRITES
       static bool midi_playing[NUM_DEXED] = {false};
       for (uint8_t instance_id = 0; instance_id < NUM_DEXED; instance_id++)
       {
@@ -779,6 +780,7 @@ void loop()
           lcd.write(20); // blank
         }
       }
+#endif
     }
   }
   else
@@ -810,6 +812,9 @@ void loop()
  ******************************************************************************/
 void handleNoteOn(byte inChannel, byte inNumber, byte inVelocity)
 {
+#ifdef SPIN_CAT8_FORCE_VELOCITY_100
+  inVelocity = 100;
+#endif
   for (uint8_t instance_id = 0; instance_id < NUM_DEXED; instance_id++)
   {
     if (checkMidiChannel(inChannel, instance_id))

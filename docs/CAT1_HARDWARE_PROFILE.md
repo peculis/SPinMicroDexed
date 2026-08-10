@@ -4,8 +4,10 @@ Date: 10 August 2026
 
 ## Status
 
-**Software pass; hardware smoke test pending.** The CAT 1 firmware compiles for
-Teensy 4.0 but has not been uploaded by Codex.
+**PASS.** The CAT 1 firmware compiled, uploaded and booted stably on the target
+SPinSynth-T-LCD hardware. The LCD and both encoders responded. With no microSD
+card installed, the LCD displayed the expected bank/voice `*ERROR*` indicators;
+SD-dependent behavior is intentionally deferred to CAT 10.
 
 ## Changes
 

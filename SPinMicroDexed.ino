@@ -228,6 +228,14 @@ elapsedMillis midi_timing_timestep;
 uint16_t midi_timing_quarter = 0;
 elapsedMillis long_button_pressed;
 elapsedMillis control_rate;
+#ifdef SPIN_DIAGNOSTICS
+elapsedMillis spin_diagnostic_timer;
+elapsedMillis spin_heartbeat_timer;
+uint8_t spin_lcd_i2c_status = 255;
+uint8_t spin_sgtl_i2c_status = 255;
+bool spin_sgtl_enabled = false;
+bool spin_heartbeat_state = false;
+#endif
 uint8_t active_voices[NUM_DEXED];
 uint8_t midi_voices[NUM_DEXED];
 #ifdef SHOW_CPU_LOAD_MSEC
@@ -268,11 +276,69 @@ extern LCDMenuLib2 LCDML;
 
 extern void getNoteName(char* noteName, uint8_t noteNumber);
 
+#ifdef SPIN_DIAGNOSTICS
+static uint8_t spin_probe_i2c(const uint8_t address)
+{
+  Wire.beginTransmission(address);
+  return Wire.endTransmission();
+}
+
+static void spin_print_i2c_status(const uint8_t status)
+{
+  if (status == 0)
+    Serial.print(F("OK"));
+  else
+  {
+    Serial.print(F("FAIL("));
+    Serial.print(status);
+    Serial.print(')');
+  }
+}
+
+static void spin_report_diagnostics()
+{
+  Serial.print(F("[CAT2] uptime="));
+  Serial.print(millis() / 1000);
+  Serial.print(F("s temp="));
+  Serial.print(tempmonGetTemp(), 1);
+  Serial.print(F("C LCD@0x27="));
+  spin_print_i2c_status(spin_lcd_i2c_status);
+  Serial.print(F(" SGTL@0x0A="));
+  spin_print_i2c_status(spin_sgtl_i2c_status);
+  Serial.print(F(" codec="));
+  Serial.print(spin_sgtl_enabled ? F("OK") : F("FAIL"));
+  Serial.print(F(" SD="));
+  if (sd_card == 0)
+    Serial.print(F("none"));
+  else
+    Serial.print(sd_card);
+  Serial.print(F(" AudioCPU="));
+  Serial.print(AudioProcessorUsage(), 1);
+  Serial.print('/');
+  Serial.print(AudioProcessorUsageMax(), 1);
+  Serial.print(F("% AudioMem="));
+  Serial.print(AudioMemoryUsage());
+  Serial.print('/');
+  Serial.println(AudioMemoryUsageMax());
+}
+#endif
+
 /***********************************************************************
    SETUP
  ***********************************************************************/
 void setup()
 {
+#ifdef SPIN_DIAGNOSTICS
+  Serial.begin(SERIAL_SPEED);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+  if (CrashReport)
+  {
+    Serial.println(F("[CAT2] Previous crash report:"));
+    Serial.print(CrashReport);
+  }
+#endif
+
   // Start audio system
   //AudioNoInterrupts();
   AudioMemory(AUDIO_MEM);
@@ -285,11 +351,18 @@ void setup()
 #ifdef ENABLE_LCD_UI
   setup_ui();
 #endif
+#ifdef SPIN_DIAGNOSTICS
+  // setup_ui() has initialized Wire and the LCD by this point.
+  spin_lcd_i2c_status = spin_probe_i2c(0x27);
+  spin_sgtl_i2c_status = spin_probe_i2c(0x0A);
+#endif
 #ifdef DEBUG
 #ifdef ENABLE_LCD_UI
   setup_debug_message();
 #endif
+#ifndef SPIN_DIAGNOSTICS
   Serial.begin(SERIAL_SPEED);
+#endif
 #endif
 #ifndef ENABLE_LCD_UI
 #ifdef DEBUG
@@ -320,7 +393,11 @@ void setup()
   setup_midi_devices();
 
 #if defined(TEENSY_AUDIO_BOARD)
+#ifdef SPIN_DIAGNOSTICS
+  spin_sgtl_enabled = sgtl5000_1.enable();
+#else
   sgtl5000_1.enable();
+#endif
   sgtl5000_1.lineOutLevel(SGTL5000_LINEOUT_LEVEL);
   sgtl5000_1.dacVolumeRamp();
   sgtl5000_1.dacVolume(1.0);
@@ -458,6 +535,13 @@ void setup()
   AudioProcessorUsageMaxReset();
   AudioMemoryUsageMaxReset();
 
+#ifdef SPIN_DIAGNOSTICS
+  Serial.println(F("[CAT2] SPinMicroDexed diagnostics active; report interval 5 seconds."));
+  spin_report_diagnostics();
+  spin_diagnostic_timer = 0;
+  spin_heartbeat_timer = 0;
+#endif
+
 #ifdef DEBUG
   for (uint8_t instance_id = 0; instance_id < NUM_DEXED; instance_id++)
   {
@@ -529,6 +613,20 @@ void setup()
 
 void loop()
 {
+#ifdef SPIN_DIAGNOSTICS
+  if (spin_heartbeat_timer >= 500)
+  {
+    spin_heartbeat_timer -= 500;
+    spin_heartbeat_state = !spin_heartbeat_state;
+    digitalWrite(LED_BUILTIN, spin_heartbeat_state ? HIGH : LOW);
+  }
+  if (spin_diagnostic_timer >= 5000)
+  {
+    spin_diagnostic_timer -= 5000;
+    spin_report_diagnostics();
+  }
+#endif
+
   // MIDI input handling
   check_midi_devices();
 

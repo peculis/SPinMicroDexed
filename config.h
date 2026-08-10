@@ -105,6 +105,7 @@
 //*************************************************************************************************
 //#define DEBUG 1
 #define SERIAL_SPEED 230400
+#define SPIN_DIAGNOSTICS 1 // CAT 2: nonblocking hardware/health telemetry
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000
 

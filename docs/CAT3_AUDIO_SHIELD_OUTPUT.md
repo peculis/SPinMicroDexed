@@ -2,6 +2,19 @@
 
 Date: 10 August 2026
 
+## Status
+
+**PASS on target hardware.** Both headphone channels produced clean, distinct
+tones with the expected mapping: I2S channel 0 / 440 Hz was heard on the left,
+and I2S channel 1 / 880 Hz was heard on the right. No restart or abnormal
+resource growth was observed.
+
+While the tones were running, observed measurements were approximately 0.9%
+current and 1.2% peak Audio CPU, five current and seven peak Audio Memory
+blocks, and 53.6 degrees C. LCD, SGTL5000, codec and no-card diagnostics all
+remained correct. Line-out testing was not required for this headphone-path
+acceptance and remains available as an optional later electrical test.
+
 ## Objective
 
 Validate the complete PJRC Audio Library and Audio Shield output path without

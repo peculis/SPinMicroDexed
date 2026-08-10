@@ -48,3 +48,18 @@ After all keys and the sustain pedal are released, `held` must return to zero.
 Serial output occurs only in this diagnostic CAT and is not a final low-latency
 MIDI design. CAT 5 passes when DIN events and their values are correct, all held
 notes clear, and the system remains stable.
+
+## Raw-UART diagnostic
+
+The first hardware run produced no decoded Note On/Off messages. A temporary
+probe therefore peeks at `Serial1` before the MIDI parser. It does not consume
+the byte. When electrical MIDI data reaches Teensy pin 0, it prints:
+
+```text
+[CAT5-RAW] Serial1 bytes=3 next=0x90
+```
+
+Raw messages without `[CAT5-DIN]` messages indicate a parser/configuration
+problem. Neither raw nor decoded messages indicate that no valid electrical
+data is reaching RX pin 0, narrowing the check to controller MIDI OUT, cable,
+DIN input circuit, power/ground, or the physical connection to pin 0.

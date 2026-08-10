@@ -557,6 +557,9 @@ void setup()
 #endif
 #ifdef SPIN_CAT5_DIN_MIDI_TEST
   Serial.println(F("[CAT5-DIN] DIN MIDI test active on Serial1 RX pin 0; encoder event logging disabled."));
+#ifdef SPIN_CAT5_RAW_UART_PROBE
+  Serial.println(F("[CAT5-RAW] Raw Serial1 probe active before PJRC MIDI parsing."));
+#endif
 #endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;

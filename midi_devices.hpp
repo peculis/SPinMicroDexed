@@ -1794,6 +1794,18 @@ void setup_midi_devices(void)
 void check_midi_devices(void)
 {
 #ifdef MIDI_DEVICE_DIN
+#if defined(SPIN_CAT5_DIN_MIDI_TEST) && defined(SPIN_CAT5_RAW_UART_PROBE)
+  if (MIDI_DEVICE_DIN.available() > 0)
+  {
+    Serial.print(F("[CAT5-RAW] Serial1 bytes="));
+    Serial.print(MIDI_DEVICE_DIN.available());
+    Serial.print(F(" next=0x"));
+    const int spin_cat5_raw_byte = MIDI_DEVICE_DIN.peek();
+    if (spin_cat5_raw_byte >= 0 && spin_cat5_raw_byte < 16)
+      Serial.print('0');
+    Serial.println(spin_cat5_raw_byte, HEX);
+  }
+#endif
   midi_serial.read();
 #endif
 #ifdef MIDI_DEVICE_USB

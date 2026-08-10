@@ -106,6 +106,7 @@
 //#define DEBUG 1
 #define SERIAL_SPEED 230400
 #define SPIN_DIAGNOSTICS 1 // CAT 2: nonblocking hardware/health telemetry
+#define SPIN_CAT3_AUDIO_TEST 1 // Alternating stereo test tones; remove after CAT 3
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000
 

@@ -77,6 +77,14 @@ AudioEffectFreeverb        freeverb_l;
 #endif
 AudioMixer4                master_mixer_r;
 AudioMixer4                master_mixer_l;
+#ifdef SPIN_CAT3_AUDIO_TEST
+AudioSynthWaveformSine     spin_cat3_tone_ch0;
+AudioSynthWaveformSine     spin_cat3_tone_ch1;
+AudioConnection            spin_cat3_patch_ch0(spin_cat3_tone_ch0, 0, master_mixer_r, 2);
+AudioConnection            spin_cat3_patch_ch1(spin_cat3_tone_ch1, 0, master_mixer_l, 2);
+elapsedMillis              spin_cat3_audio_timer;
+uint8_t                    spin_cat3_audio_state = 0;
+#endif
 AudioAmplifier             volume_r;
 AudioAmplifier             volume_l;
 AudioEffectStereoMono      stereo2mono;
@@ -581,6 +589,20 @@ void setup()
   master_mixer_r.gain(3, 0.0);
   master_mixer_l.gain(3, 0.0);
 
+#ifdef SPIN_CAT3_AUDIO_TEST
+  // Fixed, conservative CAT 3 level. This changes RAM only, not EEPROM.
+  set_volume(50, 0);
+  master_mixer_r.gain(2, 1.0);
+  master_mixer_l.gain(2, 1.0);
+  spin_cat3_tone_ch0.frequency(440.0);
+  spin_cat3_tone_ch1.frequency(880.0);
+  spin_cat3_tone_ch0.amplitude(0.12);
+  spin_cat3_tone_ch1.amplitude(0.0);
+  spin_cat3_audio_state = 0;
+  spin_cat3_audio_timer = 0;
+  Serial.println(F("[CAT3-AUDIO] I2S channel 0: 440 Hz"));
+#endif
+
 #if defined(TEENSY_AUDIO_BOARD) && defined(SGTL5000_AUDIO_THRU)
   audio_thru_mixer_r.gain(0, 1.0); // MD signal sum
   audio_thru_mixer_l.gain(0, 1.0); // MD signal sum
@@ -608,6 +630,36 @@ void setup()
 
 void loop()
 {
+#ifdef SPIN_CAT3_AUDIO_TEST
+  // 1 s tone, 250 ms silence, then the other channel; no blocking delays.
+  const uint32_t spin_cat3_state_duration =
+    (spin_cat3_audio_state == 0 || spin_cat3_audio_state == 2) ? 1000 : 250;
+  if (spin_cat3_audio_timer >= spin_cat3_state_duration)
+  {
+    spin_cat3_audio_timer -= spin_cat3_state_duration;
+    spin_cat3_audio_state = (spin_cat3_audio_state + 1) & 0x03;
+    switch (spin_cat3_audio_state)
+    {
+      case 0:
+        spin_cat3_tone_ch0.amplitude(0.12);
+        Serial.println(F("[CAT3-AUDIO] I2S channel 0: 440 Hz"));
+        break;
+      case 1:
+        spin_cat3_tone_ch0.amplitude(0.0);
+        Serial.println(F("[CAT3-AUDIO] silence"));
+        break;
+      case 2:
+        spin_cat3_tone_ch1.amplitude(0.12);
+        Serial.println(F("[CAT3-AUDIO] I2S channel 1: 880 Hz"));
+        break;
+      default:
+        spin_cat3_tone_ch1.amplitude(0.0);
+        Serial.println(F("[CAT3-AUDIO] silence"));
+        break;
+    }
+  }
+#endif
+
 #ifdef SPIN_DIAGNOSTICS
   if (spin_diagnostic_timer >= 5000)
   {

@@ -32,3 +32,17 @@ Reset or power-cycle the Teensy with the Serial Monitor already open. Save every
 `[CAT10]` line. Begin repeated notes as soon as the voice screen appears and
 continue for 15 seconds, noting when response becomes stable. Send the startup
 markers plus the first three five-second diagnostic reports.
+
+## Hardware result
+
+CAT 10-B removed the 91 ms first-loop interruption by completing the initial
+LCD screen before the `PLAYABLE` marker. A remaining one-time 3.185 ms outlier
+was followed by 110--166 us foreground polling and balanced MIDI events.
+
+The reported bright/fast versus dull/slow attack variation was a separate
+configuration issue. The inherited `Velocity Lvl` default of 100 multiplies
+incoming velocity by 100/127; for example, MIDI velocity 64 becomes about 50.
+Setting the parameter to 127 produced the expected response on both USB MIDI
+and DIN MIDI. SPinMicroDexed therefore uses 127 as its reset/default value so
+incoming velocity is preserved. The user can still deliberately reduce it from
+the Voice > Internal > Velocity Lvl menu.

@@ -5,7 +5,7 @@ Date: 11 August 2026
 The LCD boot splash displays `SPinMicroDexed` and `Initializing...`. It remains
 on screen throughout setup and is replaced only when the initial voice screen
 has been completely prepared immediately before the firmware becomes playable.
-Its configured minimum visible duration is 1500 ms, measured from the moment
+Its configured minimum visible duration is 2500 ms, measured from the moment
 the text is drawn. Initialization proceeds during that interval, and firmware
 adds only any remaining time before switching screens.
 

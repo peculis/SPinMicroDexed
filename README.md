@@ -62,6 +62,8 @@ SPinSynth-T-LCD hardware integration and the SPinMicroDexed adaptation are by
 Ricardo Peculis, with engineering assistance from OpenAI Codex.
 
 See [`NOTICE.md`](NOTICE.md) for the detailed provenance record.
+The developing narrative and CAT history are collected in
+[`docs/PROJECT_HISTORY_DRAFT.md`](docs/PROJECT_HISTORY_DRAFT.md).
 
 ## Licensing
 

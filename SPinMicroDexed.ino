@@ -714,6 +714,15 @@ void setup()
   Serial.println(F("<setup end>"));
 #endif
 
+  // Initialization runs while the splash is visible. Add only the time still
+  // needed to reach the configured minimum, rather than delaying for the full
+  // interval after initialization has already completed.
+  while ((uint32_t)(millis() - spin_splash_started_ms) < SPIN_SPLASH_MIN_MS)
+  {
+    check_midi_devices();
+    yield();
+  }
+
   LCDML.OTHER_jumpToFunc(UI_func_voice_select);
   // Complete the expensive HD44780/I2C setup and first draw before declaring
   // the instrument playable. Previously this ~90 ms work ran in the first

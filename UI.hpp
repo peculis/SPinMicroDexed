@@ -415,6 +415,7 @@ long  g_LCDML_CONTROL_button_press_time[NUM_ENCODER] = {0, 0};
 bool  g_LCDML_CONTROL_button_prev[NUM_ENCODER] = {HIGH, HIGH};
 uint8_t g_LCDML_CONTROL_prev[NUM_ENCODER] = {0, 0};
 bool menu_init = true;
+uint32_t spin_splash_started_ms = 0;
 #ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
 bool spin_voice_screen_dirty = true;
 #endif
@@ -479,6 +480,7 @@ void setup_ui(void)
   lcd.print(F("SPinMicroDexed"));
   lcd.setCursor(1, 1);
   lcd.print(F("Initializing..."));
+  spin_splash_started_ms = millis();
 
   lcd_special_chars(SCROLLBAR);
   // LCDMenuLib Setup

@@ -136,6 +136,8 @@ initializes the SGTL5000 Audio Shield, accepts DIN and USB MIDI, produces audio
 simultaneously through the Audio Shield and USB Audio, operates the LCD and two
 encoders, and preserves incoming MIDI velocity. The tested steady-state Audio
 CPU peak has remained modest for the current single-engine configuration.
+The branded `SPinMicroDexed / Initializing...` splash is held for a tested
+minimum of 2.5 seconds before the ready voice screen appears.
 
 The next major stage is microSD integration. It will validate directory
 creation, DX7 SysEx bank loading, bank and voice names, patch navigation,
@@ -162,4 +164,3 @@ SPinSynth-specific modifications.
 SPinSynth-T-LCD hardware integration, the SPinMicroDexed project direction and
 the CAT test programme are by **Ricardo Peculis**, with firmware engineering,
 diagnostic analysis and documentation assistance from **OpenAI Codex**.
-

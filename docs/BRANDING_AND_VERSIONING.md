@@ -19,3 +19,9 @@ encoder:
 The initial development identity is `v0.1.0-dev B001`. The SPinMicroDexed
 version/build constants are deliberately separate from upstream MicroDexed's
 `VERSION` so attribution and diagnostic provenance remain unambiguous.
+
+## Hardware acceptance
+
+The branded splash, clean transition to the voice screen and 2500 ms minimum
+duration passed on the target LCD1602 hardware. The System Info implementation
+remains the basis for the next combined HMI/storage test.

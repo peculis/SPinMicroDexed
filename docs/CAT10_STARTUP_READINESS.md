@@ -19,6 +19,13 @@ When no SD card is detected, the first draw no longer calls filesystem lookup
 functions. It displays `NO SD` and `RAM VOICE` instead of `*ERROR*`. Normal SD
 lookup behavior remains in place when a card is present.
 
+The first hardware run measured approximately 39.984 ms for voice-screen setup
+and 46.440 ms for its first draw. Together they explained the observed 91.020 ms
+startup poll-gap outlier. CAT 10-B now performs that initial screen setup and
+draw synchronously before printing `[CAT10] PLAYABLE`. The MIDI poll-gap timer
+is reset afterward, so the first foreground loop no longer inherits LCD startup
+work.
+
 ## Test
 
 Reset or power-cycle the Teensy with the Serial Monitor already open. Save every

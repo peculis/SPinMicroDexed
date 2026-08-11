@@ -714,12 +714,19 @@ void setup()
   Serial.println(F("<setup end>"));
 #endif
 
+  LCDML.OTHER_jumpToFunc(UI_func_voice_select);
+  // Complete the expensive HD44780/I2C setup and first draw before declaring
+  // the instrument playable. Previously this ~90 ms work ran in the first
+  // foreground loop and could delay notes played immediately after boot.
+  LCDML.loop_menu();
+
 #ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
   spin_cat8_midi_poll_timer = 0;
   spin_cat8_midi_poll_max_us = 0;
 #endif
-
-  LCDML.OTHER_jumpToFunc(UI_func_voice_select);
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.println(F("[CAT10] PLAYABLE; initial voice screen complete."));
+#endif
 }
 
 void loop()

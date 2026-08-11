@@ -67,8 +67,11 @@ Audio Shield I2S, I2C and SPI pin explicitly.
 
 ## 3. Engineering and test method
 
-The development used a sequence of **CATs**—controlled acceptance tests. The
-test programme was conceived and orchestrated by **Ricardo Peculis**, who set
+The development used a sequence of **CATs (Compile And Test)**. A CAT is a
+controlled development stage in which a limited set of changes is compiled,
+deployed to the target hardware, tested against stated acceptance criteria and
+recorded before further changes are introduced. The CAT programme was conceived
+and orchestrated by **Ricardo Peculis**, who set
 the objectives, selected the hardware constraints, decided when each stage
 could advance, operated the physical prototype and judged its musical response.
 

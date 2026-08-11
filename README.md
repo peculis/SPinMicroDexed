@@ -36,6 +36,14 @@ is selected.
 The validated SPinSynth hardware baseline is recorded in
 [`docs/SPINSYNTH_T_LCD_HARDWARE.md`](docs/SPINSYNTH_T_LCD_HARDWARE.md).
 
+## Compile And Test process
+
+Development proceeds through numbered **CATs (Compile And Test)**. Each CAT is
+a controlled stage in which a limited set of changes is compiled, deployed to
+the target hardware, tested against stated acceptance criteria, and recorded
+before further changes are introduced. The complete method is documented in
+[`docs/CAT_PROCESS.md`](docs/CAT_PROCESS.md).
+
 ## Origin and acknowledgements
 
 SPinMicroDexed is derived from **MicroDexed** by Holger Wirtz (`dcoredump`):

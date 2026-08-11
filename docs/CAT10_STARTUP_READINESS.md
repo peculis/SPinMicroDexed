@@ -46,3 +46,8 @@ Setting the parameter to 127 produced the expected response on both USB MIDI
 and DIN MIDI. SPinMicroDexed therefore uses 127 as its reset/default value so
 incoming velocity is preserved. The user can still deliberately reduce it from
 the Voice > Internal > Velocity Lvl menu.
+
+After hardware acceptance, SPinMicroDexed was changed to make this independent
+of EEPROM: `SPIN_PRESERVE_MIDI_VELOCITY` passes Note On velocity directly to
+Synth_Dexed. The inherited Velocity Level page remains for menu-layout
+compatibility but is read-only at 127 and no longer writes that value to EEPROM.

@@ -867,7 +867,11 @@ void handleNoteOn(byte inChannel, byte inNumber, byte inVelocity)
       if (inNumber >= configuration.dexed[instance_id].lowest_note && inNumber <= configuration.dexed[instance_id].highest_note)
       {
         if (configuration.dexed[instance_id].polyphony > 0)
+#ifdef SPIN_PRESERVE_MIDI_VELOCITY
+          MicroDexed[instance_id]->keydown(inNumber, inVelocity);
+#else
           MicroDexed[instance_id]->keydown(inNumber, uint8_t(float(configuration.dexed[instance_id].velocity_level / 127.0)*inVelocity + 0.5));
+#endif
 
         midi_voices[instance_id]++;
 #ifdef DEBUG

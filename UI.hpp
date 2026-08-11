@@ -3665,6 +3665,9 @@ void UI_func_velocity_level(uint8_t param)
   if (LCDML.FUNC_setup())         // ****** SETUP *********
   {
     encoderDir[ENC_R].reset();
+#ifdef SPIN_PRESERVE_MIDI_VELOCITY
+    configuration.dexed[selected_instance_id].velocity_level = 127;
+#endif
 
     lcd_special_chars(BLOCKBAR);
     lcd_display_bar_int("Velocity Lvl", configuration.dexed[selected_instance_id].velocity_level, 1.0, VELOCITY_LEVEL_MIN, VELOCITY_LEVEL_MAX, 3, false, false, true);
@@ -3678,6 +3681,11 @@ void UI_func_velocity_level(uint8_t param)
 
   if (LCDML.FUNC_loop())          // ****** LOOP *********
   {
+#ifdef SPIN_PRESERVE_MIDI_VELOCITY
+    // SPinMicroDexed deliberately passes incoming Note On velocity unchanged.
+    // Retain the inherited page for menu compatibility, but keep it read-only.
+    configuration.dexed[selected_instance_id].velocity_level = 127;
+#else
     if ((LCDML.BT_checkDown() && encoderDir[ENC_R].Down()) || (LCDML.BT_checkUp() && encoderDir[ENC_R].Up()))
     {
       if (LCDML.BT_checkDown())
@@ -3696,6 +3704,7 @@ void UI_func_velocity_level(uint8_t param)
       lcd.write(1);
     }
 #endif
+#endif
 
     lcd_display_bar_int("Velocity Lvl", configuration.dexed[selected_instance_id].velocity_level, 1.0, VELOCITY_LEVEL_MIN, VELOCITY_LEVEL_MAX, 3, false, false, false);
   }
@@ -3704,11 +3713,13 @@ void UI_func_velocity_level(uint8_t param)
   {
     lcd_special_chars(SCROLLBAR);
     encoderDir[ENC_R].reset();
+#ifndef SPIN_PRESERVE_MIDI_VELOCITY
     if (selected_instance_id == 0)
       EEPROM.update(EEPROM_START_ADDRESS + offsetof(configuration_s, dexed[0].velocity_level), configuration.dexed[0].velocity_level);
 #if NUM_DEXED > 1
     else
       EEPROM.update(EEPROM_START_ADDRESS + offsetof(configuration_s, dexed[1].velocity_level), configuration.dexed[1].velocity_level);
+#endif
 #endif
   }
 }

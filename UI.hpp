@@ -64,6 +64,7 @@ extern void eeprom_update_fx(void);
 extern void eeprom_update_dexed(uint8_t instance_id);
 extern float pseudo_log_curve(float value);
 extern uint8_t selected_instance_id;
+extern uint8_t sd_card;
 extern char receive_bank_filename[FILENAME_LEN];
 
 #ifdef DISPLAY_LCD_SPI
@@ -3783,21 +3784,20 @@ void UI_func_eeprom_reset(uint8_t param)
 void UI_func_voice_select(uint8_t param)
 {
   static uint8_t menu_voice_select = MENU_VOICE_SOUND;
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  static bool spin_cat10_voice_setup_reported = false;
+  static bool spin_cat10_voice_draw_reported = false;
+#endif
 
   if (LCDML.FUNC_setup())         // ****** SETUP *********
   {
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+    const uint32_t spin_cat10_phase_start_us = micros();
+#endif
     spin_voice_screen_dirty = true;
     encoderDir[ENC_R].reset();
 
     lcd_active_instance_number(selected_instance_id);
-
-    char bank_name[BANK_NAME_LEN];
-    char voice_name[VOICE_NAME_LEN];
-
-    if (!get_bank_name(configuration.performance.bank[selected_instance_id], bank_name, sizeof(bank_name)))
-      strcpy(bank_name, "*ERROR*");
-    if (!get_voice_by_bank_name(configuration.performance.bank[selected_instance_id], bank_name, configuration.performance.voice[selected_instance_id], voice_name, sizeof(voice_name)))
-      strcpy(voice_name, "*ERROR*");
 
     lcd.setCursor(14, 0);
     lcd.write(0);
@@ -3810,6 +3810,14 @@ void UI_func_voice_select(uint8_t param)
     lcd.createChar(6, (uint8_t*)special_chars[16]);
 #if NUM_DEXED > 1
     lcd.createChar(7, (uint8_t*)special_chars[16]);
+#endif
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+    if (!spin_cat10_voice_setup_reported)
+    {
+      spin_cat10_voice_setup_reported = true;
+      Serial.print(F("[CAT10] voice-screen setup us="));
+      Serial.println(micros() - spin_cat10_phase_start_us);
+    }
 #endif
   }
 
@@ -3929,26 +3937,37 @@ void UI_func_voice_select(uint8_t param)
 
     if (spin_voice_screen_dirty)
     {
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+      const uint32_t spin_cat10_phase_start_us = micros();
+#endif
       spin_voice_screen_dirty = false;
 
-      if (strlen(g_bank_name[selected_instance_id]) > 0)
+      if (sd_card == 0)
       {
-        strcpy(bank_name, g_bank_name[selected_instance_id]);
+        strcpy(bank_name, "NO SD");
+        strcpy(voice_name, "RAM VOICE");
       }
       else
       {
-        if (!get_bank_name(configuration.performance.bank[selected_instance_id], bank_name, sizeof(bank_name)))
-          strcpy(bank_name, "*ERROR*");
-      }
+        if (strlen(g_bank_name[selected_instance_id]) > 0)
+        {
+          strcpy(bank_name, g_bank_name[selected_instance_id]);
+        }
+        else
+        {
+          if (!get_bank_name(configuration.performance.bank[selected_instance_id], bank_name, sizeof(bank_name)))
+            strcpy(bank_name, "*ERROR*");
+        }
 
-      if (strlen(g_voice_name[selected_instance_id]) > 0)
-      {
-        strcpy(voice_name, g_voice_name[selected_instance_id]);
-      }
-      else
-      {
-        if (!get_voice_by_bank_name(configuration.performance.bank[selected_instance_id], bank_name, configuration.performance.voice[selected_instance_id], voice_name, sizeof(voice_name)))
-          strcpy(voice_name, "*ERROR*");
+        if (strlen(g_voice_name[selected_instance_id]) > 0)
+        {
+          strcpy(voice_name, g_voice_name[selected_instance_id]);
+        }
+        else
+        {
+          if (!get_voice_by_bank_name(configuration.performance.bank[selected_instance_id], bank_name, configuration.performance.voice[selected_instance_id], voice_name, sizeof(voice_name)))
+            strcpy(voice_name, "*ERROR*");
+        }
       }
 
       lcd.show(0, 0, 2, configuration.performance.bank[selected_instance_id]);
@@ -3971,6 +3990,14 @@ void UI_func_voice_select(uint8_t param)
           lcd.show(1, 13, 1, "]");
           break;
       }
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+      if (!spin_cat10_voice_draw_reported)
+      {
+        spin_cat10_voice_draw_reported = true;
+        Serial.print(F("[CAT10] first voice-screen draw us="));
+        Serial.println(micros() - spin_cat10_phase_start_us);
+      }
+#endif
     }
   }
 

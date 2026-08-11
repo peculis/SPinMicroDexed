@@ -116,6 +116,7 @@
 #define SPIN_CAT8_DISABLE_MIDI_LCD_WRITES 1 // Recovery test: no LCD I2C writes on Note On/Off
 //#define SPIN_CAT8_FORCE_VELOCITY_100 1 // Recovery test passed; natural velocity restored
 #define SPIN_CAT9_COOPERATIVE_UI_WAIT 1 // Keep MIDI serviced during timed LCD messages
+#define SPIN_CAT10_STARTUP_TIMELINE 1 // One-time boot phase timing and no-SD fast path
 //#define SPIN_CONTROL_DIAGNOSTICS 1 // CAT 2/4 only; suppress encoder log traffic
 #define SHOW_XRUN 1
 #define SHOW_CPU_LOAD_MSEC 5000

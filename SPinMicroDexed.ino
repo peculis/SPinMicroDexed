@@ -367,6 +367,9 @@ static void spin_report_diagnostics()
  ***********************************************************************/
 void setup()
 {
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  uint32_t spin_cat10_phase_start_us = micros();
+#endif
 #ifdef SPIN_DIAGNOSTICS
   Serial.begin(SERIAL_SPEED);
   if (CrashReport)
@@ -387,6 +390,11 @@ void setup()
 
 #ifdef ENABLE_LCD_UI
   setup_ui();
+#endif
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.print(F("[CAT10] LCD setup us="));
+  Serial.println(micros() - spin_cat10_phase_start_us);
+  spin_cat10_phase_start_us = micros();
 #endif
 #ifdef SPIN_DIAGNOSTICS
   // setup_ui() has initialized Wire and the LCD by this point.
@@ -428,6 +436,11 @@ void setup()
 #endif
 
   setup_midi_devices();
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.print(F("[CAT10] MIDI setup us="));
+  Serial.println(micros() - spin_cat10_phase_start_us);
+  spin_cat10_phase_start_us = micros();
+#endif
 
 #if defined(TEENSY_AUDIO_BOARD)
 #ifdef SPIN_DIAGNOSTICS
@@ -493,6 +506,12 @@ void setup()
 #endif
 #endif
 
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.print(F("[CAT10] codec setup us="));
+  Serial.println(micros() - spin_cat10_phase_start_us);
+  spin_cat10_phase_start_us = micros();
+#endif
+
   // create dynamic Dexed instances
   for (uint8_t instance_id = 0; instance_id < NUM_DEXED; instance_id++)
   {
@@ -503,6 +522,11 @@ void setup()
     create_audio_engine_chain(instance_id);
 
   }
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.print(F("[CAT10] audio-engine setup us="));
+  Serial.println(micros() - spin_cat10_phase_start_us);
+  spin_cat10_phase_start_us = micros();
+#endif
 
 #if defined(USE_FX)
   // Init effects
@@ -537,12 +561,23 @@ void setup()
 #endif
 
   initial_values_from_eeprom(false);
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.print(F("[CAT10] EEPROM/config setup us="));
+  Serial.println(micros() - spin_cat10_phase_start_us);
+  spin_cat10_phase_start_us = micros();
+#endif
 
   // start SD card
 #ifdef DISPLAY_LCD_SPI
   change_disp_sd(false);
 #endif
   sd_card = check_sd_cards();
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.print(F("[CAT10] SD probe us="));
+  Serial.print(micros() - spin_cat10_phase_start_us);
+  Serial.print(F(" result="));
+  Serial.println(sd_card == 0 ? F("none") : F("present"));
+#endif
 
   if (sd_card < 1)
   {
@@ -591,6 +626,9 @@ void setup()
 #endif
 #ifdef SPIN_CAT8_STATIC_MIDI_INDICATOR
   Serial.println(F("[CAT8-UI] Static MIDI activity symbol active; runtime LCD character animation disabled."));
+#endif
+#ifdef SPIN_CAT10_STARTUP_TIMELINE
+  Serial.println(F("[CAT10] setup complete; entering initial voice screen."));
 #endif
   spin_report_diagnostics();
   spin_diagnostic_timer = 0;

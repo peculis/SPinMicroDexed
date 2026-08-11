@@ -53,8 +53,8 @@
 //                          https://github.com/gbevin/ReceiveMIDI
 //
 // e.g.:
-// * sendmidi dev "MicroDexed MIDI" on 80 127 && sleep 1.0 && sendmidi dev "MicroDexed MIDI" off 80 0
-// * sendmidi dev "MicroDexed MIDI" syf addon/SD/90/RitCh1.syx
+// * sendmidi dev "SPinMicroDexed MIDI" on 80 127 && sleep 1.0 && sendmidi dev "SPinMicroDexed MIDI" off 80 0
+// * sendmidi dev "SPinMicroDexed MIDI" syf addon/SD/90/RitCh1.syx
 // * amidi -p hw:2,0,0 -s addon/SD/90/RitCh1.syx
 //
 // Receiving and storing MIDI SYSEX with Linux:

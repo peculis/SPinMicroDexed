@@ -2227,6 +2227,12 @@ void generate_version_string(char* buffer, uint8_t len)
 #endif
 }
 
+void generate_spin_version_string(char* buffer, uint8_t len)
+{
+  snprintf(buffer, len, "v%s B%03u", SPINMICRODEXED_VERSION,
+           (unsigned int)SPINMICRODEXED_BUILD);
+}
+
 #ifdef DISPLAY_LCD_SPI
 void change_disp_sd(bool disp)
 {

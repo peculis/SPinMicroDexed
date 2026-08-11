@@ -56,6 +56,7 @@ extern config_t configuration;
 extern void set_volume(uint8_t v, uint8_t m);
 extern bool load_sysex(uint8_t b, uint8_t v);
 extern void generate_version_string(char* buffer, uint8_t len);
+extern void generate_spin_version_string(char* buffer, uint8_t len);
 extern void initial_values_from_eeprom(bool init);
 extern void _softRestart(void);
 extern void eeprom_update_sys(void);
@@ -474,10 +475,10 @@ void setup_ui(void)
   lcd.clear();
   lcd.setFont(u8x8_font_amstrad_cpc_extended_f);
 #endif
-  lcd.setCursor(3, 0);
-  lcd.print(F("MicroDexed"));
-  lcd.setCursor(0, 1);
-  lcd.print(F("(c)parasiTstudio"));
+  lcd.setCursor(1, 0);
+  lcd.print(F("SPinMicroDexed"));
+  lcd.setCursor(1, 1);
+  lcd.print(F("Initializing..."));
 
   lcd_special_chars(SCROLLBAR);
   // LCDMenuLib Setup
@@ -3595,24 +3596,58 @@ void UI_handle_OP(uint8_t param)
 
 void UI_func_information(uint8_t param)
 {
+  static uint8_t info_page = 0;
+  static bool info_redraw = true;
+
   if (LCDML.FUNC_setup())         // ****** SETUP *********
   {
-    char version_string[LCD_cols + 1];
-
     encoderDir[ENC_R].reset();
-
-    generate_version_string(version_string, sizeof(version_string));
-
-    // setup function
-    lcd.setCursor(0, 0);
-    lcd.print(version_string);
-    lcd.setCursor(0, 1);
-    lcd.print(sd_string);
+    info_page = 0;
+    info_redraw = true;
   }
 
   if (LCDML.FUNC_loop())          // ****** LOOP *********
   {
-    ;
+    if ((LCDML.BT_checkDown() && encoderDir[ENC_R].Down()) ||
+        (LCDML.BT_checkUp() && encoderDir[ENC_R].Up()))
+    {
+      if (LCDML.BT_checkDown())
+        info_page = (info_page + 1) % 3;
+      else
+        info_page = (info_page + 2) % 3;
+      info_redraw = true;
+    }
+
+    if (info_redraw)
+    {
+      char info_line[LCD_cols + 1];
+      info_redraw = false;
+      LCDML.DISP_clear();
+
+      switch (info_page)
+      {
+        case 0:
+          lcd.setCursor(1, 0);
+          lcd.print(F("SPinMicroDexed"));
+          generate_spin_version_string(info_line, sizeof(info_line));
+          lcd.setCursor(0, 1);
+          lcd.print(info_line);
+          break;
+        case 1:
+          lcd.setCursor(0, 0);
+          lcd.print(F("MicroDexed base"));
+          generate_version_string(info_line, sizeof(info_line));
+          lcd.setCursor(0, 1);
+          lcd.print(info_line);
+          break;
+        default:
+          lcd.setCursor(0, 0);
+          lcd.print(F("Storage"));
+          lcd.setCursor(0, 1);
+          lcd.print(sd_string);
+          break;
+      }
+    }
   }
 
   if (LCDML.FUNC_close())     // ****** STABLE END *********

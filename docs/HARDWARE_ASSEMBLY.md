@@ -1,5 +1,9 @@
 # SPinMicroDexed hardware assembly
 
+The [SPinSynth-T-LCD circuit diagram](hardware/SPinSynth-T-LCD-Hardware.pdf)
+is included with the hardware documentation. See also the
+[hardware baseline notes](SPINSYNTH_T_LCD_HARDWARE.md).
+
 ## Assembly update — 5 October 2026
 
 Ricardo Peculis reports that the ribbon-cable contacts have been stabilized,

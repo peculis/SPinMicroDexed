@@ -181,3 +181,7 @@ The following lightweight operational diagnostics remain intentionally enabled:
 - Uptime and CPU temperature output every five seconds.
 - LCD I2C status at startup; status `0` indicates success.
 - SGTL5000 I2C status at startup; status `0` indicates success.
+## Circuit diagram
+
+The user-supplied [SPinSynth-T-LCD hardware circuit diagram](hardware/SPinSynth-T-LCD-Hardware.pdf)
+was added on 5 October 2026. The original PDF is preserved without modification.

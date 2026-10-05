@@ -1,8 +1,9 @@
-# Install and operate the single-instance release candidate
+# Install and operate the single-instance partial release
 
 Target: Teensy 4.0 at 600 MHz, Audio Shield Rev D/D2, native 3.3 V LCD1602,
-two encoders and SPinSynth-T hardware. Firmware identity: 0.1.0-rc1, build 2.
-This is a release candidate; new bank-save changes await bench acceptance.
+two encoders and SPinSynth-T hardware. Firmware identity: 0.1.0, build 3.
+This partial release includes bank-save changes whose bench acceptance remains
+pending. See RELEASE_0.1.0.md for the explicit validation limits.
 
 ## Build and upload
 
@@ -49,7 +50,7 @@ The exact format is documented in DX7_SD_PATCH_FORMAT.md.
 
 Patch banks bundled in the working repository have passed integrity checks;
 redistribution permission for those sounds has not been established by this
-campaign. The distributable source candidate package therefore omits addon/SD
+campaign. The distributable source package therefore omits addon/SD
 and third-party/test.mid. Supply banks you own or are permitted to use.
 
 ## Save and load

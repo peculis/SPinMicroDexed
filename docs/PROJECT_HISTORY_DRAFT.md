@@ -214,7 +214,7 @@ and documentation. Its evidence and effort-tracking method are defined in
 Each significant change received its own commit. Failed or ambiguous tests
 were not silently folded into later work: they were used to create smaller
 isolation builds until one variable at a time could be accepted or rejected.
-The detailed records remain in `docs/CAT*.md` and in the repository history.
+The detailed records remain in `docs/cat/CAT*.md` and in the repository history.
 
 ## 4. Test history through CAT 10
 

@@ -78,6 +78,6 @@ Each CAT follows the same basic sequence:
 
 ## Acceptance records
 
-Numbered CAT records are stored in `docs/CAT*.md`. Git commits preserve the
+Numbered CAT records are stored in `docs/cat/CAT*.md`. Git commits preserve the
 corresponding source changes and accepted baselines. The developing narrative
 is maintained in `docs/PROJECT_HISTORY_DRAFT.md`.

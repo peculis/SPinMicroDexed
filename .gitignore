@@ -34,3 +34,7 @@
 #
 *.swp
 .vscode
+
+# macOS filesystem metadata
+.DS_Store
+__pycache__/

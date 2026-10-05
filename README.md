@@ -115,3 +115,12 @@ terms. The original license texts are preserved as:
 
 Individual source files may contain more specific copyright and license notices;
 those notices remain in effect and must be preserved.
+
+## First release candidate
+
+The current candidate identity is **0.1.0-rc1, build 2**. See
+[installation and operating instructions](docs/INSTALL_AND_OPERATE.md),
+[CAT 14 bank-storage acceptance](docs/CAT14_BANK_STORAGE.md), and
+[the release evidence/limitations](docs/SINGLE_INSTANCE_RELEASE.md).
+The tested normal configuration/performance overwrite cases are recorded in
+CAT 13. New voice-bank save/reception changes still require bench acceptance.

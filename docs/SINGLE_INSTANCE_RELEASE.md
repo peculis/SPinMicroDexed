@@ -43,3 +43,43 @@ Codex's engineering assistance, and the contributions of upstream authors.
 - Supplied microSD content: 100 banks pass the host format/checksum validator.
 - CAT 11 source compiles; hardware application and testing remain pending.
 - No Git remote is configured in this checkout. No public release is claimed.
+
+## Additional bench confirmation — 5 October 2026
+
+Ricardo confirmed successful USB MIDI and USB Audio testing, in addition to the
+previously reported DIN MIDI bank/voice test. This is user-reported functional
+acceptance of those USB paths. The report does not specify simultaneous Shield
+and USB Audio operation, MIDI performance during patch changes, configuration
+save/reload results, or a five-hour endurance run; those checks remain pending.
+
+## CAT 12 normal storage bench results — 5 October 2026
+
+Voice configuration slot 0 restored the saved Transpose value in-session and
+again after power cycling. Performance slot 0 restored the original voice name
+and sound in-session and after power cycling. Ricardo confirmed these results.
+Overwrite/failure handling, remaining storage/UI warnings, patch-change MIDI
+responsiveness, simultaneous audio destinations, and final regression/endurance
+remain pending. These successful cases do not establish complete release readiness.
+
+## CAT 13 bench results and enclosure constraint — 5 October 2026
+
+Voice-configuration overwrite cancellation preserved the old value. Confirmed
+voice-configuration and performance overwrites restored their newly saved values
+in-session and after power cycling. Ricardo will keep the enclosure closed; the
+no-card save-failure bench test is not performed and must not require opening
+the instrument. Host failure-injection results support but do not replace it.
+Ricardo reports patch changing while playing “seems OK”; measured worst-case
+response and transport coverage remain unspecified. Final enclosed endurance
+and remaining voice-bank write/reception corrections remain release work.
+
+## Enclosed endurance report — 5 October 2026
+
+Ricardo reports an endurance run exceeding 24 hours. Asked whether crashes,
+audio/USB dropouts, stuck notes, frozen controls or unexpected restarts occurred,
+he answered No. This exceeds the planned five-hour duration and records no
+user-observed faults. Playing/patch-change activity, exact firmware build,
+continuous telemetry and simultaneous audio-output coverage were not specified;
+this is a user-reported endurance result, not an instrumented stress-test claim.
+The five-hour duration requirement is satisfied by the reported run. Remaining
+storage corrections must still be bench-accepted and tested as appropriate;
+this result cannot validate firmware changes made after the run.

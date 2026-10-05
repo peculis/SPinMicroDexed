@@ -2215,25 +2215,13 @@ uint32_t crc32(byte * calc_start, uint16_t calc_bytes) // base code from https:/
 
 void generate_version_string(char* buffer, uint8_t len)
 {
-  char tmp[3];
-
-  memset(buffer, 0, len);
-  strncat(buffer, VERSION, len);
-#if defined(TEENSY3_5)
-  strncat(buffer, "-3.5", 4);
-#elif defined(TEENSY3_6)
-  strncat(buffer, "-3.6", 4);
-#elif defined(TEENSY4)
-  strncat(buffer, "-4.0", 4);
-#endif
+  snprintf(buffer, len, "%s-4.0%s-%u", VERSION,
 #if defined(USE_FX)
-  strncat(buffer, "FX", 2);
+           "FX",
+#else
+           "",
 #endif
-#if defined(MAX_NOTES)
-  strncat(buffer, "-", 1);
-  itoa (MAX_NOTES, tmp, 10);
-  strncat(buffer, tmp, 2);
-#endif
+           unsigned(MAX_NOTES));
 }
 
 void generate_spin_version_string(char* buffer, uint8_t len)
@@ -2344,7 +2332,8 @@ uint8_t check_sd_cards(void)
     Serial.println(volumesize);
 #endif
 
-    sprintf(sd_string + 5, "FAT%2d %02dGB", volume.fatType(), int(volumesize));
+    snprintf(sd_string + 5, sizeof(sd_string) - 5, "FAT%02u %02uGB",
+             unsigned(volume.fatType()) % 100, unsigned(volumesize) % 100);
   }
 
 #ifdef DEBUG

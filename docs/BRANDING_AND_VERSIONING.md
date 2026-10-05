@@ -38,3 +38,7 @@ re-enumerated.
 The branded splash, clean transition to the voice screen and 2500 ms minimum
 duration passed on the target LCD1602 hardware. The System Info implementation
 remains the basis for the next combined HMI/storage test.
+
+On 5 October 2026, the next candidate identity is `0.1.0-rc1`, build 2. It retains
+one engine and disabled optional effects. A final public release tag is pending
+CAT 14 bench acceptance and the chosen GitHub destination.

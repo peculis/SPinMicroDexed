@@ -1838,16 +1838,14 @@ void UI_func_midi_channel(uint8_t param)
 
 void getNoteName(char* noteName, uint8_t noteNumber)
 {
-  char notes [12][3] = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
-  uint8_t oct_index = noteNumber - 12;
-
-  noteNumber -= 21;
-  sprintf(noteName, "%2s%1d", notes[noteNumber % 12], oct_index / 12);
+  static const char* notes[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+  unsigned note = min(unsigned(noteNumber), 127u);
+  snprintf(noteName, 5, "%s%d", notes[note % 12], int(note / 12) - 1);
 }
 
 void UI_func_lowest_note(uint8_t param)
 {
-  char note_name[4];
+  char note_name[5];
 
   if (LCDML.FUNC_setup())         // ****** SETUP *********
   {
@@ -1908,7 +1906,7 @@ void UI_func_lowest_note(uint8_t param)
 
 void UI_func_highest_note(uint8_t param)
 {
-  char note_name[4];
+  char note_name[5];
 
   if (LCDML.FUNC_setup())         // ****** SETUP *********
   {
@@ -4250,14 +4248,8 @@ void UI_func_save_performance(uint8_t param)
           mode = 0xff;
           if (overwrite == false || yesno == true)
           {
-            if (yesno == true)
-            {
-              char tmp[FILENAME_LEN];
-              sprintf(tmp, "/%s/%s%d.syx", PERFORMANCE_CONFIG_PATH, PERFORMANCE_CONFIG_NAME, configuration.sys.performance_number);
-              SD.remove(tmp);
-            }
-            save_sd_performance(configuration.sys.performance_number);
-            lcd.show(1, 0, 16, "Done.");
+            bool saved = save_sd_performance(configuration.sys.performance_number);
+            lcd.show(1, 0, 16, saved ? "Done." : "Save failed.");
             spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
             LCDML.FUNC_goBackToMenu();
           }
@@ -4267,7 +4259,7 @@ void UI_func_save_performance(uint8_t param)
 
             mode = 0;
             lcd.setCursor(0, 1);
-            sprintf(tmp, "[%2d]            ", configuration.sys.performance_number);
+            snprintf(tmp, sizeof(tmp), "[%2u]           ", unsigned(configuration.sys.performance_number % 100));
             lcd.print(tmp);
           }
         }
@@ -4489,14 +4481,8 @@ void UI_func_save_voiceconfig(uint8_t param)
           mode = 0xff;
           if (overwrite == false || yesno == true)
           {
-            if (yesno == true)
-            {
-              char tmp[FILENAME_LEN];
-              sprintf(tmp, "/%s/%s%d.syx", VOICE_CONFIG_PATH, VOICE_CONFIG_NAME, configuration.performance.voiceconfig_number[selected_instance_id]);
-              SD.remove(tmp);
-            }
-            save_sd_voiceconfig(configuration.performance.voiceconfig_number[selected_instance_id], selected_instance_id);
-            lcd.show(1, 0, 16, "Done.");
+            bool saved = save_sd_voiceconfig(configuration.performance.voiceconfig_number[selected_instance_id], selected_instance_id);
+            lcd.show(1, 0, 16, saved ? "Done." : "Save failed.");
             spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
             LCDML.FUNC_goBackToMenu();
           }
@@ -4506,7 +4492,7 @@ void UI_func_save_voiceconfig(uint8_t param)
 
             mode = 1;
             lcd.setCursor(0, 1);
-            sprintf(tmp, "[%2d]            ", configuration.performance.voiceconfig_number[selected_instance_id]);
+            snprintf(tmp, sizeof(tmp), "[%2u]           ", unsigned(configuration.performance.voiceconfig_number[selected_instance_id]) % 100);
             lcd.print(tmp);
           }
         }
@@ -4690,16 +4676,8 @@ void UI_func_save_fx(uint8_t param)
           mode = 0xff;
           if (overwrite == false || yesno == true)
           {
-            if (yesno == true)
-            {
-              char tmp[FILENAME_LEN];
-              sprintf(tmp, "/%s/%s%d.syx", FX_CONFIG_PATH, FX_CONFIG_NAME, configuration.performance.fx_number);
-              SD.remove(tmp);
-            }
-            save_sd_fx(configuration.performance.fx_number);
-
-            lcd.show(1, 0, 16, "Done.");
-            LCDML.FUNC_goBackToMenu();
+            bool saved = save_sd_fx(configuration.performance.fx_number);
+            lcd.show(1, 0, 16, saved ? "Done." : "Save failed.");
             spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
           }
           else if (overwrite == true && yesno == false)
@@ -4708,7 +4686,7 @@ void UI_func_save_fx(uint8_t param)
 
             mode = 0;
             lcd.setCursor(0, 1);
-            sprintf(tmp, "[%2d]            ", configuration.performance.fx_number);
+            snprintf(tmp, sizeof(tmp), "[%2u]           ", unsigned(configuration.performance.fx_number) % 100);
             lcd.print(tmp);
           }
         }
@@ -4885,18 +4863,8 @@ void UI_func_save_voice(uint8_t param)
         default:
           if (yesno == true)
           {
-#ifdef DEBUG
-            bool ret = save_sd_voice(configuration.performance.bank[selected_instance_id], configuration.performance.voice[selected_instance_id], selected_instance_id);
-
-            if (ret == true)
-              Serial.println(F("Saving voice OK."));
-            else
-              Serial.println(F("Error while saving voice."));
-#else
-            save_sd_voice(configuration.performance.bank[selected_instance_id], configuration.performance.voice[selected_instance_id], selected_instance_id);
-#endif
-
-            lcd.show(1, 0, 16, "Done.");
+            bool saved = save_sd_voice(configuration.performance.bank[selected_instance_id], configuration.performance.voice[selected_instance_id], selected_instance_id);
+            lcd.show(1, 0, 16, saved ? "Done." : "Save failed.");
             spin_cooperative_message_wait(MESSAGE_WAIT_TIME);
 
             mode = 0xff;
@@ -5058,7 +5026,7 @@ void UI_func_sysex_receive_bank(uint8_t param)
 #endif
             char tmp[FILENAME_LEN];
             strcpy(tmp, receive_bank_filename);
-            sprintf(receive_bank_filename, "/%d/%s.syx", bank_number, tmp);
+            snprintf(receive_bank_filename, sizeof(receive_bank_filename), "/%u/%s.syx", unsigned(bank_number), tmp);
 #ifdef DEBUG
             Serial.print(F("Receiving into bank "));
             Serial.print(bank_number);

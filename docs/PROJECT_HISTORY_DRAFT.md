@@ -348,3 +348,21 @@ SPinSynth-specific modifications.
 SPinSynth-T-LCD hardware integration, the SPinMicroDexed project direction and
 the CAT test programme are by **Ricardo Peculis**, with firmware engineering,
 diagnostic analysis and documentation assistance from **OpenAI Codex**.
+
+## Single-instance release storage campaign — 5 October 2026
+
+The normal microSD bank/voice test passed over DIN MIDI; Ricardo also confirmed
+USB MIDI and USB Audio. CAT 12 corrected configuration payload length/checksum
+and failure propagation. Voice configuration slot 0 restored Transpose in-session
+and after restart; performance slot 0 restored voice name/sound in-session and
+after restart. CAT 13 stages configuration replacement, preserves a backup on
+interrupted replacement, and reports save failures rather than unconditional
+Done. Compile and host failure-injection tests pass; CAT 13 bench overwrite and
+no-card tests remain pending. No public release or full storage acceptance is
+claimed. Detailed evidence remains in the CAT 11–13 records.
+
+Ricardo additionally reported more than 24 hours of enclosed-instrument endurance
+operation and no observed crashes, audio/USB dropouts, stuck notes, frozen
+controls or unexpected restarts. Test activity and exact firmware build were
+unspecified; the record preserves this as user-reported evidence and does not
+attribute the run to later untested changes.

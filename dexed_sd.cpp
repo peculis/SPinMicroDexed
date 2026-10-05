@@ -101,56 +101,26 @@ bool load_sd_voice(uint8_t b, uint8_t v, uint8_t instance_id)
 
 bool save_sd_voice(uint8_t b, uint8_t v, uint8_t instance_id)
 {
-  v = constrain(v, 0, MAX_VOICES - 1);
-  b = constrain(b, 0, MAX_BANKS - 1);
-
-  if (sd_card > 0)
+  if (sd_card <= 0 || b >= MAX_BANKS || v >= MAX_VOICES || instance_id >= NUM_DEXED)
+    return false;
+  char bank_name[BANK_NAME_LEN];
+  char filename[FILENAME_LEN];
+  if (!get_bank_name(b, bank_name, sizeof(bank_name)))
+    return false;
+  snprintf(filename, sizeof(filename), "/%u/%s.syx", unsigned(b), bank_name);
+  File original = SD.open(filename);
+  uint8_t bank[4104];
+  if (!original || original.read(bank, sizeof(bank)) != sizeof(bank))
   {
-    File sysex;
-    char filename[FILENAME_LEN];
-    char bank_name[BANK_NAME_LEN];
-    uint8_t data[128];
-
-    if (!get_bank_name(b, bank_name, sizeof(bank_name)))
-      return false;
-    snprintf(filename, sizeof(filename), "/%u/%s.syx", unsigned(b), bank_name);
-
-    sysex = SD.open(filename, FILE_WRITE);
-    if (!sysex)
-    {
-#ifdef DEBUG
-      Serial.print(F("E : Cannot open "));
-      Serial.print(filename);
-      Serial.println(F(" on SD."));
-#endif
-      return (false);
-    }
-
-    MicroDexed[instance_id]->encodeVoice(data);
-
-    if (put_sd_voice(sysex, v, data))
-    {
-#ifdef DEBUG
-      char voice_name[VOICE_NAME_LEN];
-      strncpy(voice_name, (char*)&MicroDexed[instance_id]->data[145], sizeof(voice_name));
-      Serial.print(F("Saving voice to "));
-      Serial.print(filename);
-      Serial.print(F(" ["));
-      Serial.print(voice_name);
-      Serial.println(F("]"));
-#endif
-      sysex.close();
-
-      return (true);
-    }
-#ifdef DEBUG
-    else
-      Serial.println(F("E : Cannot load voice data"));
-#endif
-    sysex.close();
+    original.close();
+    return false;
   }
-
-  return (false);
+  original.close();
+  if (!valid_dx7_bank(bank))
+    return false;
+  MicroDexed[instance_id]->encodeVoice(bank + 6 + 128 * v);
+  bank[4102] = calc_checksum(bank + 6, 4096);
+  return save_sd_bank(filename, bank);
 }
 
 bool get_sd_voice(File sysex, uint8_t voice_number, uint8_t* data)
@@ -235,142 +205,58 @@ bool get_sd_voice(File sysex, uint8_t voice_number, uint8_t* data)
 
 bool put_sd_voice(File sysex, uint8_t voice_number, uint8_t* data)
 {
-  uint16_t n;
-  int32_t bulk_checksum_calc = 0;
-
-  sysex.seek(0);
-
-  if (sysex.size() != 4104) // check sysex size
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx file size wrong."));
-#endif
-    return (false);
-  }
-  if (sysex.read() != 0xf0)  // check sysex start-byte
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx start byte not found."));
-#endif
-    return (false);
-  }
-  if (sysex.read() != 0x43)  // check sysex vendor is Yamaha
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx vendor not Yamaha."));
-#endif
-    return (false);
-  }
-  sysex.seek(4103);
-  if (sysex.read() != 0xf7)  // check sysex end-byte
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx end byte not found."));
-#endif
-    return (false);
-  }
-  sysex.seek(3);
-  if (sysex.read() != 0x09)  // check for sysex type (0x09=32 voices)
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx type not 32 voices."));
-#endif
-    return (false);
-  }
-
-  sysex.seek(6 + (voice_number * 128));
-  sysex.write(data, 128);
-
-  // checksum calculation
-  sysex.seek(6); // start of bulk data
-  for (n = 0; n < 4096; n++)
-  {
-    uint8_t d = sysex.read();
-    bulk_checksum_calc -= d;
-  }
-  sysex.seek(4102); // Bulk checksum
-  sysex.write(bulk_checksum_calc & 0x7f);
-
-#ifdef DEBUG
-  Serial.print(F("Bulk checksum : 0x"));
-  Serial.println(bulk_checksum_calc & 0x7f, HEX);
-#endif
-
-  return (true);
+  // Retained helper: validate the original before any in-place update.
+  uint8_t bank[4104];
+  if (voice_number >= 32 || !sysex.seek(0) || sysex.size() != sizeof(bank) ||
+      sysex.read(bank, sizeof(bank)) != sizeof(bank) || !valid_dx7_bank(bank))
+    return false;
+  memcpy(bank + 6 + 128 * voice_number, data, 128);
+  bank[4102] = calc_checksum(bank + 6, 4096);
+  if (!valid_dx7_bank(bank) || !sysex.seek(0) ||
+      sysex.write(bank, sizeof(bank)) != sizeof(bank))
+    return false;
+  sysex.flush();
+  return true;
 }
 
 bool save_sd_bank(const char* bank_filename, uint8_t* data)
 {
-  char tmp[FILENAME_LEN];
-  char tmp2[FILENAME_LEN];
-  int bank_number;
-  File root, entry;
-
-  if (sd_card > 0)
+  if (sd_card <= 0 || !valid_dx7_bank(data))
+    return false;
+  // Accept only the documented /0..99/<1..10 characters>.syx layout.
+  unsigned bank_number;
+  int offset = 0;
+  if (sscanf(bank_filename, "/%u/%n", &bank_number, &offset) != 1 ||
+      offset == 0 || bank_number >= MAX_BANKS)
+    return false;
+  const char* stem = bank_filename + offset;
+  size_t length = strlen(stem);
+  if (length < 5 || length > 14 || strcmp(stem + length - 4, ".syx") != 0 ||
+      stem[0] == '.' || strchr(stem, '/') || strchr(stem, '\\'))
+    return false;
+  char directory_name[5];
+  snprintf(directory_name, sizeof(directory_name), "/%u", bank_number);
+  File directory = SD.open(directory_name);
+  if (!directory || !directory.isDirectory())
+    return false;
+  while (true)
   {
-#ifdef DEBUG
-    Serial.print(F("Trying so store "));
-    Serial.print(bank_filename);
-    Serial.println(F("."));
-#endif
-
-    // first remove old bank
-    sscanf(bank_filename, "/%d/%s", &bank_number, tmp);
-    sprintf(tmp, "/%d", bank_number);
-    root = SD.open(tmp);
-    while (42 == 42)
+    File entry = directory.openNextFile();
+    if (!entry)
+      break;
+    const char* name = entry.name();
+    const char* extension = strrchr(name, '.');
+    bool conflict = !entry.isDirectory() && extension &&
+        strcasecmp(extension, ".syx") == 0 && strcasecmp(name, stem) != 0;
+    entry.close();
+    if (conflict)
     {
-      entry = root.openNextFile();
-      if (entry)
-      {
-        if (!entry.isDirectory())
-        {
-#ifdef DEBUG
-          Serial.print(F("Removing "));
-          Serial.print(tmp);
-          Serial.print(F("/"));
-          Serial.println(entry.name());
-#endif
-          sprintf(tmp2, "%s/%s", tmp, entry.name());
-          entry.close();
-#ifndef DEBUG
-          SD.remove(tmp2);
-#else
-          bool r = SD.remove(tmp2);
-          if (r == false)
-          {
-            Serial.print(F("E: cannot remove "));
-            Serial.print(tmp2);
-            Serial.println(F("."));
-          }
-#endif
-          break;
-        }
-      }
-      else
-      {
-        break;
-      }
+      directory.close();
+      return false;
     }
-    root.close();
-
-    // store new bank at /<b>/<bank_name>.syx
-#ifdef DEBUG
-    Serial.print(F("Storing bank as "));
-    Serial.print(bank_filename);
-    Serial.print(F("..."));
-#endif
-    root = SD.open(bank_filename, FILE_WRITE);
-    root.write(data, 4104);
-    root.close();
-#ifdef DEBUG
-    Serial.println(F(" done."));
-#endif
   }
-  else
-    return (false);
-
-  return (true);
+  directory.close();
+  return replace_sd_bank_file(bank_filename, data);
 }
 
 /******************************************************************************
@@ -402,7 +288,11 @@ bool load_sd_voiceconfig(int8_t vc, uint8_t instance_id)
       sysex = SD.open(filename);
       if (sysex)
       {
-        get_sd_data(sysex, 0x42, (uint8_t*)&configuration.dexed[instance_id]);
+        if (!get_sd_data(sysex, 0x42, (uint8_t*)&configuration.dexed[instance_id], sizeof(configuration.dexed[instance_id])))
+        {
+          sysex.close();
+          return false;
+        }
         set_voiceconfig_params(instance_id);
         sysex.close();
 
@@ -435,10 +325,9 @@ bool save_sd_voiceconfig(uint8_t vc, uint8_t instance_id)
 
   if (sd_card > 0)
   {
-    File sysex;
     char filename[FILENAME_LEN];
 
-    sprintf(filename, "/%s/%s%d.syx", VOICE_CONFIG_PATH, VOICE_CONFIG_NAME, vc);
+    snprintf(filename, sizeof(filename), "/%s/%s%d.syx", VOICE_CONFIG_PATH, VOICE_CONFIG_NAME, vc);
 
 #ifdef DEBUG
     Serial.print(F("Saving voice config "));
@@ -450,24 +339,7 @@ bool save_sd_voiceconfig(uint8_t vc, uint8_t instance_id)
     Serial.println(filename);
 #endif
 
-    sysex = SD.open(filename, FILE_WRITE);
-    if (sysex)
-    {
-      if (write_sd_data(sysex, 0x42, (uint8_t*)&configuration.dexed[instance_id], sizeof(configuration.dexed[instance_id])))
-      {
-        sysex.close();
-        return (true);
-      }
-      sysex.close();
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.print(F("E : Cannot open "));
-      Serial.print(filename);
-      Serial.println(F(" on SD."));
-#endif
-    }
+    return replace_sd_configuration(filename, 0x42, (uint8_t*)&configuration.dexed[instance_id], sizeof(configuration.dexed[instance_id]));
   }
 
   return (false);
@@ -502,7 +374,11 @@ bool load_sd_fx(int8_t fx)
       sysex = SD.open(filename);
       if (sysex)
       {
-        get_sd_data(sysex, 0x43, (uint8_t*)&configuration.fx);
+        if (!get_sd_data(sysex, 0x43, (uint8_t*)&configuration.fx, sizeof(configuration.fx)))
+        {
+          sysex.close();
+          return false;
+        }
         set_fx_params();
         sysex.close();
 
@@ -536,10 +412,9 @@ bool save_sd_fx(uint8_t fx)
 
   if (sd_card > 0)
   {
-    File sysex;
     char filename[FILENAME_LEN];
 
-    sprintf(filename, "/%s/%s%d.syx", FX_CONFIG_PATH, FX_CONFIG_NAME, fx);
+    snprintf(filename, sizeof(filename), "/%s/%s%d.syx", FX_CONFIG_PATH, FX_CONFIG_NAME, fx);
 
 #ifdef DEBUG
     Serial.print(F("Saving fx config "));
@@ -548,25 +423,7 @@ bool save_sd_fx(uint8_t fx)
     Serial.println(filename);
 #endif
 
-    sysex = SD.open(filename, FILE_WRITE);
-    if (sysex)
-    {
-      if (write_sd_data(sysex, 0x43, (uint8_t*)&configuration.fx, sizeof(configuration.fx)))
-      {
-        sysex.close();
-        return (true);
-      }
-      sysex.close();
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.print(F("E : Cannot open "));
-      Serial.print(filename);
-      Serial.println(F(" on SD."));
-#endif
-      return (false);
-    }
+    return replace_sd_configuration(filename, 0x43, (uint8_t*)&configuration.fx, sizeof(configuration.fx));
   }
 
   return (false);
@@ -601,7 +458,11 @@ bool load_sd_performance(int8_t p)
       sysex = SD.open(filename);
       if (sysex)
       {
-        get_sd_data(sysex, 0x44, (uint8_t*)&configuration.performance);
+        if (!get_sd_data(sysex, 0x44, (uint8_t*)&configuration.performance, sizeof(configuration.performance)))
+        {
+          sysex.close();
+          return false;
+        }
         sysex.close();
 
         for (uint8_t instance_id = 0; instance_id < NUM_DEXED; instance_id++)
@@ -643,10 +504,9 @@ bool save_sd_performance(uint8_t p)
 
   if (sd_card > 0)
   {
-    File sysex;
     char filename[FILENAME_LEN];
 
-    sprintf(filename, "/%s/%s%d.syx", PERFORMANCE_CONFIG_PATH, PERFORMANCE_CONFIG_NAME, p);
+    snprintf(filename, sizeof(filename), "/%s/%s%d.syx", PERFORMANCE_CONFIG_PATH, PERFORMANCE_CONFIG_NAME, p);
 
 #ifdef DEBUG
     Serial.print(F("Saving performance config "));
@@ -655,25 +515,7 @@ bool save_sd_performance(uint8_t p)
     Serial.println(filename);
 #endif
 
-    sysex = SD.open(filename, FILE_WRITE);
-    if (sysex)
-    {
-      if (write_sd_data(sysex, 0x44, (uint8_t*)&configuration.performance, sizeof(configuration.performance)))
-      {
-        sysex.close();
-        return (true);
-      }
-      sysex.close();
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.print(F("E : Cannot open "));
-      Serial.print(filename);
-      Serial.println(F(" on SD."));
-#endif
-      return (false);
-    }
+    return replace_sd_configuration(filename, 0x44, (uint8_t*)&configuration.performance, sizeof(configuration.performance));
   }
   return (false);
 }
@@ -681,148 +523,127 @@ bool save_sd_performance(uint8_t p)
 /******************************************************************************
    HELPER FUNCTIONS
  ******************************************************************************/
-bool get_sd_data(File sysex, uint8_t format, uint8_t* conf)
+bool get_sd_data(File sysex, uint8_t format, uint8_t* conf, uint16_t len)
 {
-  uint16_t n;
-  int32_t bulk_checksum_calc = 0;
-  int8_t bulk_checksum;
+  // Three header bytes, payload, checksum, and end byte.
+  // Validate the complete payload before changing live configuration.
+  if (sysex.size() != uint32_t(len) + 5 || !sysex.seek(0) ||
+      sysex.read() != 0xf0 || sysex.read() != 0x67 || sysex.read() != format)
+    return false;
 
-#ifdef DEBUG
-  Serial.print(F("Reading "));
-  Serial.print(sysex.size());
-  Serial.println(F(" bytes."));
-#endif
-
-  if (sysex.read() != 0xf0)  // check sysex start-byte
+  int32_t checksum = 0;
+  for (uint16_t i = 0; i < len; ++i)
   {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx start byte not found."));
-#endif
-    return (false);
+    int value = sysex.read();
+    if (value < 0)
+      return false;
+    checksum -= value;
   }
-  if (sysex.read() != 0x67)  // check sysex vendor is unofficial SYSEX-ID for MicroDexed
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx vendor not unofficial SYSEX-ID for MicroDexed."));
-#endif
-    return (false);
-  }
-  if (sysex.read() != format) // check for sysex type
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx type not found."));
-#endif
-    return (false);
-  }
-  sysex.seek(sysex.size() - 1);
-  if (sysex.read() != 0xf7)  // check sysex end-byte
-  {
-#ifdef DEBUG
-    Serial.println(F("E : SysEx end byte not found."));
-#endif
-    return (false);
-  }
-
-  sysex.seek(sysex.size() - 2); // Bulk checksum
-  bulk_checksum = sysex.read();
-
-  sysex.seek(3); // start of bulk data
-  for (n = 0; n < sysex.size() - 6; n++)
-  {
-    uint8_t d = sysex.read();
-    bulk_checksum_calc -= d;
-#ifdef DEBUG
-    Serial.print(F("SYSEX data read: 0x"));
-    Serial.println(d, HEX);
-#endif
-  }
-  bulk_checksum_calc &= 0x7f;
-
-  if (int8_t(bulk_checksum_calc) != bulk_checksum)
-  {
-#ifdef DEBUG
-    Serial.print(F("E : Bulk checksum mismatch : 0x"));
-    Serial.print(int8_t(bulk_checksum_calc), HEX);
-    Serial.print(F(" != 0x"));
-    Serial.println(bulk_checksum, HEX);
-#endif
-    return (false);
-  }
-#ifdef DEBUG
-  else
-  {
-    Serial.print(F("Bulk checksum : 0x"));
-    Serial.print(int8_t(bulk_checksum_calc), HEX);
-    Serial.print(F(" [0x"));
-    Serial.print(bulk_checksum, HEX);
-    Serial.println(F("]"));
-  }
-#endif
-
-  sysex.seek(3); // start of bulk data
-  for (n = 0; n < sysex.size() - 6; n++)
-  {
-    uint8_t d = sysex.read();
-    *(conf++) = d;
-  }
-
-#ifdef DEBUG
-  Serial.println(F("SD data loaded."));
-#endif
-
-  return (true);
+  if (sysex.read() != (checksum & 0x7f) || sysex.read() != 0xf7)
+    return false;
+  if (!sysex.seek(3))
+    return false;
+  return sysex.read(conf, len) == len;
 }
 
 bool write_sd_data(File sysex, uint8_t format, uint8_t* data, uint16_t len)
 {
-#ifdef DEBUG
-  Serial.print(F("Storing SYSEX format 0x"));
-  Serial.print(format, HEX);
-  Serial.print(F(" with length of "));
-  Serial.print(len, DEC);
-  Serial.println(F(" bytes."));
-#endif
+  if (!sysex.seek(0))
+    return false;
+  if (sysex.write(uint8_t(0xf0)) != 1 ||
+      sysex.write(uint8_t(0x67)) != 1 ||
+      sysex.write(format) != 1 || sysex.write(data, len) != len ||
+      sysex.write(calc_checksum(data, len)) != 1 ||
+      sysex.write(uint8_t(0xf7)) != 1)
+    return false;
+  sysex.flush();
+  return sysex.size() == uint32_t(len) + 5;
+}
 
-  // write sysex start
-  sysex.write(0xf0);
-#ifdef DEBUG
-  Serial.println(F("Write SYSEX start:    0xf0"));
-#endif
-  // write sysex vendor is unofficial SYSEX-ID for MicroDexed
-  sysex.write(0x67);
-#ifdef DEBUG
-  Serial.println(F("Write SYSEX vendor:   0x67"));
-#endif
-  // write sysex format number
-  sysex.write(format);
-#ifdef DEBUG
-  Serial.print(F("Write SYSEX format:   0x"));
-  Serial.println(format, HEX);
-#endif
-  // write data
-  sysex.write(data, len);
-#ifdef DEBUG
-  for (uint16_t i = 0; i < len; i++)
+bool replace_sd_configuration(const char* filename, uint8_t format, uint8_t* data, uint16_t len)
+{
+  char temporary[FILENAME_LEN + 5];
+  char backup[FILENAME_LEN + 5];
+  if (snprintf(temporary, sizeof(temporary), "%s.tmp", filename) >= int(sizeof(temporary)) ||
+      snprintf(backup, sizeof(backup), "%s.bak", filename) >= int(sizeof(backup)))
+    return false;
+  // A retained backup may indicate an interrupted replacement. Preserve it.
+  if (SD.exists(backup))
+    return false;
+  if (SD.exists(temporary) && !SD.remove(temporary))
+    return false;
+  File staged = SD.open(temporary, FILE_WRITE);
+  if (!staged)
+    return false;
+  bool written = write_sd_data(staged, format, data, len);
+  staged.close();
+  if (!written)
   {
-    Serial.print(F("Write SYSEX data:     0x"));
-    Serial.println(data[i], HEX);
+    SD.remove(temporary);
+    return false;
   }
-#endif
-  // write checksum
-  sysex.write(calc_checksum(data, len));
-#ifdef DEBUG
-  uint8_t checksum = calc_checksum(data, len);
-  sysex.write(checksum);
-  Serial.print(F("Write SYSEX checksum: 0x"));
-  Serial.println(checksum, HEX);
-#endif
-  // write sysex end
-  sysex.write(0xf7);
-#ifdef DEBUG
-  Serial.println(F("Write SYSEX end:      0xf7"));
-#endif
+  return install_staged_sd_file(filename, temporary, backup);
+}
 
-  return (true);
+bool install_staged_sd_file(const char* filename, const char* temporary, const char* backup)
+{
+  bool replacing = SD.exists(filename);
+  if (replacing && !SD.rename(filename, backup))
+  {
+    SD.remove(temporary);
+    return false;
+  }
+  if (!SD.rename(temporary, filename))
+  {
+    if (replacing)
+      SD.rename(backup, filename);
+    SD.remove(temporary);
+    return false;
+  }
+  // If cleanup fails, report failure and retain the previous file as .bak.
+  return !replacing || SD.remove(backup);
+}
+
+bool valid_dx7_bank(const uint8_t* data)
+{
+  if (data[0] != 0xf0 || data[1] != 0x43 || data[2] > 15 ||
+      data[3] != 9 || data[4] != 32 || data[5] != 0 || data[4103] != 0xf7)
+    return false;
+  int32_t checksum = 0;
+  for (uint16_t i = 6; i < 4102; ++i)
+  {
+    if (data[i] > 127)
+      return false;
+    checksum -= data[i];
+  }
+  return data[4102] == (checksum & 127);
+}
+
+bool replace_sd_bank_file(const char* filename, uint8_t* data)
+{
+  if (!valid_dx7_bank(data))
+    return false;
+  char temporary[FILENAME_LEN + 5];
+  char backup[FILENAME_LEN + 5];
+  if (snprintf(temporary, sizeof(temporary), "%s.tmp", filename) >= int(sizeof(temporary)) ||
+      snprintf(backup, sizeof(backup), "%s.bak", filename) >= int(sizeof(backup)) ||
+      SD.exists(backup))
+    return false;
+  if (SD.exists(temporary) && !SD.remove(temporary))
+    return false;
+  File staged = SD.open(temporary, FILE_WRITE);
+  if (!staged)
+    return false;
+  bool written = staged.write(data, 4104) == 4104;
+  staged.flush();
+  written = written && staged.size() == 4104;
+  staged.close();
+  if (!written)
+  {
+    SD.remove(temporary);
+    return false;
+  }
+  return install_staged_sd_file(filename, temporary, backup);
 }
 
 uint8_t calc_checksum(uint8_t* data, uint16_t len)

@@ -280,3 +280,15 @@ and justified as a documented limitation rather than silently omitted.
 This Executive Summary and the detailed project history are living documents.
 Both will be revised as evidence accumulates and will become release records
 only when the SPinMicroDexed project reaches its defined conclusion.
+
+## First-release candidate update — 5 October 2026
+
+Candidate 0.1.0-rc1 build 2 retains one engine and disabled effects. Normal
+configuration/performance save, reload and overwrite cases passed in-session
+and after restart. DIN MIDI, USB MIDI and USB Audio were user-confirmed. A
+more-than-24-hour enclosed endurance run had no reported faults; build and
+activity were unspecified. The enclosure remains closed. No-card save failure
+is host-tested only. Bank-write corrections compile and pass host integrity
+and failure tests; physical edited-voice save and SysEx bank reception remain
+pending. The history, operating guide and CAT records retain the distinction
+between accepted baseline evidence and new candidate behavior.

@@ -64,7 +64,7 @@ bool save_sd_fx(uint8_t fx);
 bool load_sd_performance(int8_t p);
 bool save_sd_performance(uint8_t p);
 
-bool get_sd_data(File sysex, uint8_t format, uint8_t* conf);
+bool get_sd_data(File sysex, uint8_t format, uint8_t* conf, uint16_t len);
 bool write_sd_data(File sysex, uint8_t format, uint8_t* data, uint16_t len);
 uint8_t calc_checksum(uint8_t* data, uint16_t len);
 void strip_extension(const char* s, char* target, uint8_t len);
@@ -72,4 +72,10 @@ void strip_extension(const char* s, char* target, uint8_t len);
 bool get_bank_name(uint8_t b, char* name, uint8_t len);
 bool get_voice_name(uint8_t b, uint8_t v, char* name, uint8_t len);
 bool get_voice_by_bank_name(uint8_t b, const char* bank_name, uint8_t v, char* voice_name, uint8_t len);
+// Stage configuration writes before replacing an existing slot.
+bool replace_sd_configuration(const char* filename, uint8_t format, uint8_t* data, uint16_t len);
+
+bool install_staged_sd_file(const char*, const char*, const char*);
+bool valid_dx7_bank(const uint8_t*);
+bool replace_sd_bank_file(const char*, uint8_t*);
 #endif

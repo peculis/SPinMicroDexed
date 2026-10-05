@@ -76,3 +76,6 @@ AudioMem peak 5, AudioCPU peak 8.6%, temperature 61.3–62.5 C. USB note counter
 remained zero. Foreground MIDI poll gaps peaked at 115076 us during the test;
 correlation with patch selection is not captured. This remains a release
 performance observation to check under simultaneous patch changes and MIDI.
+
+Ricardo selected the first MIDI-input option, DIN MIDI, for this successful test.
+USB MIDI remains a separate pending check; its Serial note counters were zero.

@@ -70,8 +70,8 @@
 
 // SPinMicroDexed release identity. VERSION above is the retained upstream
 // MicroDexed version and is shown separately on the System Info screen.
-#define SPINMICRODEXED_VERSION "0.1.0-dev"
-#define SPINMICRODEXED_BUILD 1
+#define SPINMICRODEXED_VERSION "0.1.0-rc1"
+#define SPINMICRODEXED_BUILD 2
 #define SPIN_SPLASH_MIN_MS 2500
 
 //*************************************************************************************************

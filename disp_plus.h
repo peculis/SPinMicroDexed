@@ -69,7 +69,7 @@ class Disp_Plus : public T
         if (justify_right == true)
           s += field_size - l;
 
-        strncpy(s, str, l);
+        memcpy(s, str, l); // tmp retains its explicit terminator after the field.
 
         //setCursor(pos_x * getMaxCharWidth(), pos_y * getMaxCharHeight());
         this->setCursor(pos_x, pos_y );

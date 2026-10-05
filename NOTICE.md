@@ -28,6 +28,16 @@ MicroDexed is a Teensy port of code from these projects:
 - music-synthesizer-for-android:
   <https://github.com/google/music-synthesizer-for-android>
 
+The authoritative MicroDexed history begins on 30 April 2018, records the
+first explicit Teensy 3.5/Audio Shield attempt on 3 May 2018 and a first working
+version on 13 May 2018. Teensy 3.6 and 4.x support followed as the project
+evolved.
+
+Synth_Dexed was established as a separate Teensy library in March 2021 from
+the same Dexed/MicroDexed engine lineage. This SPinMicroDexed repository retains
+the engine files embedded in the imported 2024 MicroDexed snapshot; it does not
+currently link against the independently evolving Synth_Dexed library.
+
 The imported source also acknowledges PPPlay, LCDMenuLib2, and the MicroDexed
 test and documentation contributors listed in the upstream README.
 

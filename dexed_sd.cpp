@@ -48,8 +48,9 @@ bool load_sd_voice(uint8_t b, uint8_t v, uint8_t instance_id)
     char bank_name[BANK_NAME_LEN];
     uint8_t data[128];
 
-    get_bank_name(b, bank_name, sizeof(bank_name));
-    sprintf(filename, "/%d/%s.syx", b, bank_name);
+    if (!get_bank_name(b, bank_name, sizeof(bank_name)))
+      return false;
+    snprintf(filename, sizeof(filename), "/%u/%s.syx", unsigned(b), bank_name);
 
     sysex = SD.open(filename);
     if (!sysex)
@@ -110,8 +111,9 @@ bool save_sd_voice(uint8_t b, uint8_t v, uint8_t instance_id)
     char bank_name[BANK_NAME_LEN];
     uint8_t data[128];
 
-    get_bank_name(b, bank_name, sizeof(bank_name));
-    sprintf(filename, "/%d/%s.syx", b, bank_name);
+    if (!get_bank_name(b, bank_name, sizeof(bank_name)))
+      return false;
+    snprintf(filename, sizeof(filename), "/%u/%s.syx", unsigned(b), bank_name);
 
     sysex = SD.open(filename, FILE_WRITE);
     if (!sysex)
@@ -833,68 +835,59 @@ uint8_t calc_checksum(uint8_t* data, uint16_t len)
   return (bulk_checksum_calc & 0x7f);
 }
 
-void strip_extension(char* s, char* target, uint8_t len)
+void strip_extension(const char* s, char* target, uint8_t len)
 {
-  char tmp[FILENAME_LEN];
-  char* token;
-
-  strcpy(tmp, s);
-  token = strtok(tmp, ".");
-  if (token == NULL)
-    strcpy(target, "*ERROR*");
-  else
-    strcpy(target, token);
-
-  target[len] = '\0';
+  if (len == 0)
+    return;
+  size_t count = strcspn(s, ".");
+  count = min(count, size_t(len - 1));
+  memcpy(target, s, count);
+  target[count] = '\0';
 }
 
 bool get_bank_name(uint8_t b, char* name, uint8_t len)
 {
-  File sysex;
+  if (len == 0)
+    return false;
+  name[0] = '\0';
+  if (sd_card <= 0 || b >= MAX_BANKS)
+    return false;
 
-  if (sd_card > 0)
+  char bankdir[5];
+  snprintf(bankdir, sizeof(bankdir), "/%u", unsigned(b));
+  File directory = SD.open(bankdir);
+  if (!directory || !directory.isDirectory())
+    return false;
+
+  bool found = false;
+  while (true)
   {
-    char bankdir[4];
-    File entry;
-
-    memset(name, 0, len);
-
-    sprintf(bankdir, "/%d", b);
-
-    // try to open directory
-    sysex = SD.open(bankdir);
-    if (!sysex)
-      return (false);
-
-    do
+    File entry = directory.openNextFile();
+    if (!entry)
+      break;
+    const char* filename = entry.name();
+    const char* extension = strrchr(filename, '.');
+    size_t stem_length = extension ? size_t(extension - filename) : 0;
+    if (!entry.isDirectory() && filename[0] != '.' && extension &&
+        strcasecmp(extension, ".syx") == 0 && stem_length > 0 &&
+        stem_length < BANK_NAME_LEN && stem_length < len && entry.size() == 4104)
     {
-      entry = sysex.openNextFile();
-    } while (entry.isDirectory());
-
-    if (entry.isDirectory())
-    {
-      entry.close();
-      sysex.close();
-      return (false);
+      // More than one usable bank is ambiguous; never select by directory order.
+      if (found)
+      {
+        name[0] = '\0';
+        entry.close();
+        directory.close();
+        return false;
+      }
+      memcpy(name, filename, stem_length);
+      name[stem_length] = '\0';
+      found = true;
     }
-
-    strip_extension(entry.name(), name, len);
-
-#ifdef DEBUG
-    Serial.print(F("Found bank-name ["));
-    Serial.print(name);
-    Serial.print(F("] for bank ["));
-    Serial.print(b);
-    Serial.println(F("]"));
-#endif
-
     entry.close();
-    sysex.close();
-
-    return (true);
   }
-
-  return (false);
+  directory.close();
+  return found;
 }
 
 bool get_voice_name(uint8_t b, uint8_t v, char* name, uint8_t len)
@@ -909,8 +902,9 @@ bool get_voice_name(uint8_t b, uint8_t v, char* name, uint8_t len)
     b = constrain(b, 0, MAX_BANKS - 1);
     v = constrain(v, 0, MAX_VOICES - 1);
 
-    get_bank_name(b, bank_name, sizeof(bank_name));
-    sprintf(filename, "/%d/%s.syx", b, bank_name);
+    if (!get_bank_name(b, bank_name, sizeof(bank_name)))
+      return false;
+    snprintf(filename, sizeof(filename), "/%u/%s.syx", unsigned(b), bank_name);
 #ifdef DEBUG
     Serial.print(F("Reading voice-name from ["));
     Serial.print(filename);

@@ -11,16 +11,31 @@ SPinSynth-T-LCD hardware platform:
 - simultaneous Audio Shield and USB Audio output
 - microSD on the Audio Shield
 
-The first milestone is a conservative hardware port. The existing DX7-compatible
-synthesis engine, voice loading, SysEx handling, and menu behavior will be kept
-intact until the basic system is building and operating reliably.
+The initial objective was a conservative hardware port using the minimum
+practical changes required for Ricardo Peculis's validated SPinSynth hardware,
+without redesigning the inherited DX7-compatible synthesis arithmetic. As CAT
+testing exercised the complete instrument, its scope expanded constructively to
+include evidence-led refinements in pin protection, startup, MIDI/UI
+cooperation, responsiveness and diagnostics for this particular configuration.
+MicroDexed remains the capable and gratefully acknowledged foundation for this
+work.
 
 ## Status
 
-The imported MicroDexed baseline has passed CAT 0 compilation. CAT 1 adds the
-initial conflict-free SPinSynth-T-LCD hardware profile and is ready for its first
-hardware smoke test. Later CATs will add diagnostics and remove blocking LCD/UI
-behavior before the full performance test.
+As of 5 October 2026, Ricardo reports that the ribbon-cable contacts are stable
+and the working hardware is assembled inside its plastic housing. See the
+[hardware assembly record and images](docs/HARDWARE_ASSEMBLY.md).
+
+The accepted firmware baseline has completed CAT 1–10: LCD/encoder controls,
+DIN and USB MIDI, simultaneous Audio Shield/USB audio, engine initialization,
+MIDI/UI responsiveness, startup readiness, and full incoming velocity.
+
+On 5 October 2026 we selected **one DX7 instance** for the first release.
+Optional effects and USB Host MIDI remain disabled. Dual-instance operation
+and effects are later milestones; the broader project objective is retained.
+This is a development build, not yet a published release. microSD acceptance,
+save/load safety, final enclosed-hardware regression and endurance testing are
+still required. See [the release plan](docs/SINGLE_INSTANCE_RELEASE.md).
 
 ## CAT 1 Arduino build settings
 
@@ -36,12 +51,14 @@ is selected.
 The validated SPinSynth hardware baseline is recorded in
 [`docs/SPINSYNTH_T_LCD_HARDWARE.md`](docs/SPINSYNTH_T_LCD_HARDWARE.md).
 
-## Compile And Test process
+## Compile, Apply, Test process
 
-Development proceeds through numbered **CATs (Compile And Test)**. Each CAT is
-a controlled stage in which a limited set of changes is compiled, deployed to
-the target hardware, tested against stated acceptance criteria, and recorded
-before further changes are introduced. The complete method is documented in
+Development proceeds through numbered **CATs (Compile, Apply, Test)**. Design
+and coding produce a bounded change; CAT is the mandatory acceptance gate that
+then compiles it, applies it to the real instrument and tests it against stated
+criteria before further changes are introduced. The number, sequence, scope and
+evidence for these limited changes are negotiated before coding and may be
+revised as bench results change the diagnosis. The complete method is documented in
 [`docs/CAT_PROCESS.md`](docs/CAT_PROCESS.md).
 
 ## Origin and acknowledgements
@@ -72,6 +89,20 @@ Ricardo Peculis, with engineering assistance from OpenAI Codex.
 See [`NOTICE.md`](NOTICE.md) for the detailed provenance record.
 The developing narrative and CAT history are collected in
 [`docs/PROJECT_HISTORY_DRAFT.md`](docs/PROJECT_HISTORY_DRAFT.md).
+That history also compares the imported MicroDexed Teensy 4.0 configuration
+with the SPinSynth hardware and distinguishes our application/integration
+contributions from Synth_Dexed FM-engine optimization.
+
+For a direct account of the project's purpose, origin, contribution, present
+state and remaining objectives, see
+[`docs/EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md). The Executive Summary
+and detailed history are living documents and will be revised together through
+the conclusion of the project.
+
+SPinMicroDexed also serves as a documented human–AI software-engineering
+experiment. The final product and collaboration will be evaluated for features,
+quality, effort, traceability and method effectiveness according to
+[`docs/COLLABORATION_EVALUATION_PLAN.md`](docs/COLLABORATION_EVALUATION_PLAN.md).
 
 ## Licensing
 

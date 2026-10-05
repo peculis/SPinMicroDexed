@@ -46,3 +46,6 @@ truncation warnings remain in this candidate compile. Remaining warnings are
 inherited render-signature hiding, an unused helper and digitalRead-to-bool
 narrowing. Source serializer/staged-bank failure tests and all 100 local bank
 format/checksum checks pass. These are host/compile evidence, not a passed CAT.
+
+The candidate uploaded successfully to the connected Teensy 4.0 on 5 October
+2026 (CLI exit 0, upload port usb:113000). Physical CAT 14 checks remain pending.

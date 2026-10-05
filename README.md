@@ -66,8 +66,9 @@ MIDI/UI responsiveness, startup readiness, and full incoming velocity.
 On 5 October 2026 we selected **one DX7 instance** for the first release.
 Optional effects and USB Host MIDI remain disabled. Dual-instance operation
 and effects are later milestones; the broader project objective is retained.
-The first partial release is **SPinMicroDexed 0.1.0**. GitHub publication is
-pending. Normal bank loading
+The first partial release is **SPinMicroDexed 0.1.0**. It is published on
+[GitHub](https://github.com/peculis/SPinMicroDexed/releases/tag/v0.1.0)
+with a pre-release label reflecting its explicit validation limits. Normal bank loading
 and configuration/performance save, reload and overwrite have passed the
 recorded bench cases. Ricardo also reports more than 24 hours of enclosed
 operation without observed faults; the exact build and activity were unspecified,

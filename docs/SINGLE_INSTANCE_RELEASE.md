@@ -83,3 +83,12 @@ this is a user-reported endurance result, not an instrumented stress-test claim.
 The five-hour duration requirement is satisfied by the reported run. Remaining
 storage corrections must still be bench-accepted and tested as appropriate;
 this result cannot validate firmware changes made after the run.
+
+## Publication — 5 October 2026
+
+SPinMicroDexed 0.1.0 First Partial Release is published at
+https://github.com/peculis/SPinMicroDexed/releases/tag/v0.1.0, with a pre-release
+label and the explicit limitations in RELEASE_0.1.0.md. Release source commit
+is 6eadf11e78b49f0775114391cc4d82ac64169d7d. GitHub asset checksums match local
+firmware/source/release-record packages. The current main branch may include
+post-release documentation updates; the v0.1.0 tag identifies the release.

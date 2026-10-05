@@ -1,7 +1,9 @@
 # SPinMicroDexed 0.1.0 — First Partial Release
 
 Release decision: 5 October 2026. Firmware build 3. Local tag: v0.1.0.
-GitHub publication is pending the repository destination and publishing access.
+Published: https://github.com/peculis/SPinMicroDexed/releases/tag/v0.1.0
+GitHub label: pre-release. Firmware, source package and release records are
+available as assets; their GitHub SHA-256 digests matched the local files.
 
 ## Product and scope
 
